@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import logo from "../../assets/icon.png"; // Asegúrate de tener un logo en esta ruta
+import logo from "../../assets/icon.png";
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
