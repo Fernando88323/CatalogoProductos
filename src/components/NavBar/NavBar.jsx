@@ -1,12 +1,22 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useAuth } from "../../context/AuthContext";
 import logo from "../../assets/icon.png"; // Asegúrate de tener un logo en esta ruta
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setShowUserMenu(false);
+    navigate("/");
   };
 
   return (
@@ -43,12 +53,74 @@ function Navbar() {
             >
               Contacto
             </Link>
-            <Link
-              to="/admin/login"
-              className="text-white hover:text-gray-300 transition-colors duration-200"
-            >
-              Iniciar Sesión
-            </Link>
+
+            {/* Mostrar opciones según el estado de autenticación */}
+            {isAuthenticated() ? (
+              <div className="relative">
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center space-x-2 text-white hover:text-gray-300 transition-colors duration-200"
+                >
+                  <img
+                    src={user?.picture || "/default-avatar.png"}
+                    alt={user?.name || "Usuario"}
+                    className="h-8 w-8 rounded-full border-2 border-white"
+                  />
+                  <span className="hidden lg:block">
+                    {user?.given_name || "Usuario"}
+                  </span>
+                  <svg
+                    className="w-4 h-4"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+
+                {showUserMenu && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                    <div className="px-4 py-2 text-sm text-gray-700 border-b">
+                      <p className="font-medium">{user?.name}</p>
+                      <p className="text-gray-500">{user?.email}</p>
+                    </div>
+                    <Link
+                      to="/profile"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => setShowUserMenu(false)}
+                    >
+                      Mi Perfil
+                    </Link>
+                    {user?.role === "admin" && (
+                      <Link
+                        to="/admin/dashboard"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        Panel Admin
+                      </Link>
+                    )}
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Cerrar Sesión
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="text-white hover:text-gray-300 transition-colors duration-200"
+              >
+                Iniciar Sesión
+              </Link>
+            )}
           </div>
 
           {/* Botón hamburguesa - Mobile */}
