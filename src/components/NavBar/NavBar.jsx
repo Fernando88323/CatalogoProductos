@@ -44,7 +44,7 @@ function Navbar() {
               Contacto
             </Link>
             <Link
-              to="/login"
+              to="/admin/login"
               className="text-white hover:text-gray-300 transition-colors duration-200"
             >
               Iniciar Sesión
@@ -115,7 +115,7 @@ function Navbar() {
               Contacto
             </Link>
             <Link
-              to="/login"
+              to="/admin/login"
               className="block px-3 py-2 text-white hover:bg-blue-700 rounded-md transition-colors duration-200"
               onClick={() => setIsMenuOpen(false)}
             >
