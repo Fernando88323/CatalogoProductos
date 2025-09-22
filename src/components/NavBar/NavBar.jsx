@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import logo from "../../assets/icon.png"; // Asegúrate de tener un logo en esta ruta
+import logo from "../../assets/logoOficial.jpg"; // Asegúrate de tener un logo en esta ruta
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -18,7 +18,7 @@ function Navbar() {
             <Link to="/" className="flex items-center space-x-2">
               <img src={logo} alt="Mi Tienda" className="h-8 w-auto" />
               <span className="text-white font-bold text-lg md:text-xl">
-                Jesy Store
+                Jesé Shop
               </span>
             </Link>
           </div>
@@ -45,9 +45,10 @@ function Navbar() {
             </Link>
             <Link
               to="/admin/login"
-              className="text-white hover:text-gray-300 transition-colors duration-200"
+              className="block px-3 py-2 text-white hover:bg-blue-700 rounded-md transition-colors duration-200"
+              onClick={() => setIsMenuOpen(false)}
             >
-              Iniciar Sesión
+              Admin
             </Link>
           </div>
 
@@ -119,7 +120,7 @@ function Navbar() {
               className="block px-3 py-2 text-white hover:bg-blue-700 rounded-md transition-colors duration-200"
               onClick={() => setIsMenuOpen(false)}
             >
-              Iniciar Sesión
+              Admin
             </Link>
           </div>
         </div>
