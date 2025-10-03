@@ -14,7 +14,7 @@ function ZoomImage({ src, alt }) {
 
     setStyle({
       backgroundPosition: `${x}% ${y}%`,
-      backgroundSize: "200%", // nivel de zoom
+      backgroundSize: "100%", // nivel de zoom
     });
   };
 

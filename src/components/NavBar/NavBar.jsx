@@ -10,14 +10,14 @@ function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-10 bg-blue-600 text-white shadow-lg">
-      <div className="max-w-6xl mx-auto px-4">
+    <nav className="sticky top-0 z-30 bg-white text-black shadow-lg">
+      <div className="mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo y nombre */}
           <div className="flex items-center space-x-3">
             <Link to="/" className="flex items-center space-x-2">
               <img src={logo} alt="Mi Tienda" className="h-8 w-auto" />
-              <span className="text-white font-bold text-lg md:text-xl">
+              <span className="text-black font-bold text-lg md:text-xl">
                 Jesé Shop
               </span>
             </Link>
@@ -27,25 +27,25 @@ function Navbar() {
           <div className="hidden md:flex items-center space-x-6">
             <Link
               to="/"
-              className="text-white hover:text-gray-300 transition-colors duration-200"
+              className="text-black font-semibold hover:text-blue-500 transition-colors duration-200"
             >
               Inicio
             </Link>
             <Link
               to="/admin/dashboard"
-              className="text-white hover:text-gray-300 transition-colors duration-200"
+              className="text-black font-semibold hover:text-blue-500 transition-colors duration-200"
             >
               Catálogo
             </Link>
             <Link
               to="/contacto"
-              className="text-white hover:text-gray-300 transition-colors duration-200"
+              className="text-black font-semibold hover:text-blue-500 transition-colors duration-200"
             >
               Contacto
             </Link>
             <Link
               to="/admin/login"
-              className="block px-3 py-2 text-white hover:bg-blue-700 rounded-md transition-colors duration-200"
+              className="block px-3 py-2 font-semibold text-black hover:text-blue-500 rounded-md transition-colors duration-200"
               onClick={() => setIsMenuOpen(false)}
             >
               Admin
@@ -56,7 +56,7 @@ function Navbar() {
           <div className="md:hidden">
             <button
               onClick={toggleMenu}
-              className="text-white hover:text-gray-300 focus:outline-none focus:text-gray-300 transition-colors duration-200"
+              className="text-black focus:outline-none transition-colors duration-200"
               aria-label="Abrir menú"
             >
               <svg
@@ -93,31 +93,31 @@ function Navbar() {
               : "max-h-0 opacity-0 overflow-hidden"
           }`}
         >
-          <div className="py-2 space-y-1 border-t border-blue-500">
+          <div className="py-2 space-y-1 border-t border-gray-500">
             <Link
               to="/"
-              className="block px-3 py-2 text-white hover:bg-blue-700 rounded-md transition-colors duration-200"
+              className="block px-3 py-2 text-black font-semibold hover:text-blue-500 rounded-md transition-colors duration-200"
               onClick={() => setIsMenuOpen(false)}
             >
               Inicio
             </Link>
             <Link
               to="/admin/dashboard"
-              className="block px-3 py-2 text-white hover:bg-blue-700 rounded-md transition-colors duration-200"
+              className="block px-3 py-2 text-black font-semibold hover:text-blue-500 rounded-md transition-colors duration-200"
               onClick={() => setIsMenuOpen(false)}
             >
               Catálogo
             </Link>
             <Link
               to="/contacto"
-              className="block px-3 py-2 text-white hover:bg-blue-700 rounded-md transition-colors duration-200"
+              className="block px-3 py-2 text-black font-semibold hover:text-blue-500 rounded-md transition-colors duration-200"
               onClick={() => setIsMenuOpen(false)}
             >
               Contacto
             </Link>
             <Link
               to="/admin/login"
-              className="block px-3 py-2 text-white hover:bg-blue-700 rounded-md transition-colors duration-200"
+              className="block px-3 py-2 text-black font-semibold hover:text-blue-500 rounded-md transition-colors duration-200"
               onClick={() => setIsMenuOpen(false)}
             >
               Admin
