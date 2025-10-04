@@ -1,4 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
+import { useProducts } from "../../hooks/useProducts";
+import NavBar2 from "../../components/NavBar/NavBar2";
+import ProductCard from "../../components/ProductCard/ProductCard";
 import {
   FaWhatsapp,
   FaShoppingCart,
@@ -18,51 +22,63 @@ const HomePage2 = () => {
   const [favorites, setFavorites] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
+  const [visibleSections, setVisibleSections] = useState({});
 
-  const products = [
-    {
-      id: 1,
-      name: "Zapatos Deportivos",
-      price: 59.99,
-      image:
-        "https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg",
-      category: "Calzado",
-      rating: 4.5,
-      discount: 15,
-    },
-    {
-      id: 2,
-      name: "Reloj Clásico",
-      price: 120.0,
-      image: "https://images.pexels.com/photos/190819/pexels-photo-190819.jpeg",
-      category: "Accesorios",
-      rating: 5,
-      discount: 0,
-    },
-    {
-      id: 3,
-      name: "Bolso Elegante",
-      price: 75.0,
-      image:
-        "https://images.pexels.com/photos/5418938/pexels-photo-5418938.jpeg",
-      category: "Bolsos",
-      rating: 4.8,
-      discount: 20,
-    },
-    {
-      id: 4,
-      name: "Auriculares Inalámbricos",
-      price: 89.99,
-      image: "https://images.pexels.com/photos/374870/pexels-photo-374870.jpeg",
-      category: "Tecnología",
-      rating: 4.7,
-      discount: 10,
-    },
-  ];
+  const heroRef = useRef(null);
+  const filtersRef = useRef(null);
+  const productsRef = useRef(null); // Obtener productos del backend
+  const { data, isLoading, error } = useProducts({
+    page: 1,
+    limit: 100, // Traer todos los productos
+  });
 
-  const categories = ["Todos", "Calzado", "Accesorios", "Bolsos", "Tecnología"];
+  // Intersection Observer para animaciones al hacer scroll
+  useEffect(() => {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: "0px 0px -100px 0px",
+    };
+
+    const observerCallback = (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setVisibleSections((prev) => ({
+            ...prev,
+            [entry.target.id]: true,
+          }));
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(
+      observerCallback,
+      observerOptions
+    );
+
+    // Observar las secciones
+    if (heroRef.current) observer.observe(heroRef.current);
+    if (filtersRef.current) observer.observe(filtersRef.current);
+    if (productsRef.current) observer.observe(productsRef.current);
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Catálogo de categorías dinámico desde los productos
+  const categories = useMemo(() => {
+    if (!data?.items || data.items.length === 0) return ["Todos"];
+
+    const uniqueCategories = new Set(
+      data.items.map((product) => product.categoria_nombre).filter((cat) => cat) // Filtrar valores nulos/undefined
+    );
+
+    return ["Todos", ...Array.from(uniqueCategories)];
+  }, [data?.items]);
 
   const whatsappNumber = "50373707035";
+  const facebookUrl =
+    "https://www.facebook.com/jesydaniela?rdid=KQ5R4w7U7GpXEET2&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1CMAX7u5tS%2F#"; // Cambia por tu página de Facebook
+  const instagramUrl =
+    "https://www.instagram.com/jesygbarrera/?utm_source=qr&igsh=MXZsOGlsbGdudmh2bw%3D%3D#"; // Cambia por tu cuenta de Instagram
 
   const toggleFavorite = (id) => {
     setFavorites((prev) =>
@@ -81,51 +97,74 @@ const HomePage2 = () => {
     window.open(url, "_blank");
   };
 
-  const filteredProducts = products.filter(
-    (product) =>
-      (selectedCategory === "Todos" || product.category === selectedCategory) &&
-      product.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const openSocialMedia = (platform) => {
+    let url = "";
+    switch (platform) {
+      case "facebook":
+        url = facebookUrl;
+        break;
+      case "instagram":
+        url = instagramUrl;
+        break;
+      default:
+        return;
+    }
+    window.open(url, "_blank");
+  };
+
+  // Filtrar productos del backend
+  const filteredProducts = useMemo(() => {
+    if (!data?.items) return [];
+
+    return data.items.filter((product) => {
+      // Solo mostrar productos activos y con stock
+      if (!product.activo || product.stock <= 0) return false;
+
+      const matchesSearch =
+        product.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.descripcion?.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesCategory =
+        selectedCategory === "Todos" ||
+        product.categoria_nombre === selectedCategory;
+
+      return matchesSearch && matchesCategory;
+    });
+  }, [data?.items, searchTerm, selectedCategory]);
+
+  // Obtener imagen del producto o placeholder
+  const getProductImage = (product) => {
+    return (
+      product.imagenes?.[0]?.image_url ||
+      "https://via.placeholder.com/400x400?text=Sin+Imagen"
+    );
+  };
+
+  // Calcular rating basado en alguna métrica o usar valor por defecto
+  const getProductRating = () => {
+    return 4.5; // Valor por defecto
+  };
 
   return (
     <div className="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
-      {/* Header mejorado */}
-      <header className="bg-white shadow-lg sticky top-0 z-50 backdrop-blur-sm bg-white/95">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
-                <FaShoppingCart className="text-white text-xl" />
-              </div>
-              <h1 className="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600">
-                Mi Catálogo
-              </h1>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <button className="relative group">
-                <FaHeart className="text-2xl text-gray-600 hover:text-pink-500 transition-colors" />
-                {favorites.length > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-pink-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center animate-pulse">
-                    {favorites.length}
-                  </span>
-                )}
-              </button>
-
-              <button
-                onClick={() => openWhatsApp()}
-                className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-full hover:shadow-lg hover:scale-105 transition-all duration-300 font-semibold"
-              >
-                <FaWhatsapp className="text-xl" />
-                <span className="hidden sm:inline">Contactar</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Header con NavBar2 */}
+      <NavBar2
+        favorites={favorites}
+        showBackButton={false}
+        onWhatsAppClick={() => openWhatsApp()}
+        onFavoriteClick={() => console.log("Favoritos:", favorites)}
+      />
 
       {/* Hero mejorado */}
-      <section className="relative text-white py-24 px-6 overflow-hidden">
+      <section
+        ref={heroRef}
+        id="hero-section"
+        className={`relative text-white py-24 px-6 overflow-hidden transition-all duration-1000 ${
+          visibleSections["hero-section"]
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-10"
+        }`}
+      >
         <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-[length:200%_100%] animate-gradient"></div>
 
         <div className="absolute inset-0 opacity-10">
@@ -166,7 +205,15 @@ const HomePage2 = () => {
       </section>
 
       {/* Filtros por categoría y búsqueda */}
-      <section className="max-w-7xl mx-auto px-6 -mt-8 relative z-20">
+      <section
+        ref={filtersRef}
+        id="filters-section"
+        className={`max-w-7xl mx-auto px-6 -mt-8 relative z-20 transition-all duration-1000 delay-200 ${
+          visibleSections["filters-section"]
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-10"
+        }`}
+      >
         <div className="bg-white rounded-2xl shadow-xl p-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
             {/* Título y categorías */}
@@ -219,111 +266,65 @@ const HomePage2 = () => {
       </section>
 
       {/* Catálogo de productos mejorado */}
-      <main className="max-w-7xl mx-auto p-6 md:p-10">
+      <main
+        ref={productsRef}
+        id="products-section"
+        className={`max-w-7xl mx-auto p-6 md:p-10 transition-all duration-1000 delay-300 ${
+          visibleSections["products-section"]
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-10"
+        }`}
+      >
         <div className="mb-8">
           <h2 className="text-3xl font-extrabold text-gray-800 mb-2">
             Productos Destacados
           </h2>
           <p className="text-gray-600">
-            {filteredProducts.length} productos encontrados
+            {isLoading
+              ? "Cargando productos..."
+              : `${filteredProducts.length} producto${
+                  filteredProducts.length !== 1 ? "s" : ""
+                } encontrado${filteredProducts.length !== 1 ? "s" : ""}`}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {filteredProducts.map((product, index) => (
-            <div
-              key={product.id}
-              className="group bg-white shadow-lg rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-gray-100"
-              style={{
-                animation: `fadeInUp 0.6s ease-out ${index * 0.1}s both`,
-              }}
-            >
-              {/* Imagen del producto */}
-              <div className="relative overflow-hidden">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
-                />
+        {/* Loading state */}
+        {isLoading && (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-600"></div>
+          </div>
+        )}
 
-                {/* Badge de descuento */}
-                {product.discount > 0 && (
-                  <div className="absolute top-3 left-3 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg animate-pulse">
-                    -{product.discount}%
-                  </div>
-                )}
+        {/* Error state */}
+        {error && (
+          <div className="text-center py-20">
+            <div className="text-6xl mb-4">⚠️</div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">
+              Error al cargar productos
+            </h3>
+            <p className="text-gray-600">{error}</p>
+          </div>
+        )}
 
-                {/* Botón de favorito */}
-                <button
-                  onClick={() => toggleFavorite(product.id)}
-                  className="absolute top-3 right-3 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
-                >
-                  <FaHeart
-                    className={`text-xl ${
-                      favorites.includes(product.id)
-                        ? "text-pink-500"
-                        : "text-gray-400"
-                    } transition-colors`}
-                  />
-                </button>
+        {/* Products grid */}
+        {!isLoading && !error && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {filteredProducts.map((product, index) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                index={index}
+                favorites={favorites}
+                toggleFavorite={toggleFavorite}
+                openWhatsApp={openWhatsApp}
+                getProductImage={getProductImage}
+                getProductRating={getProductRating}
+              />
+            ))}
+          </div>
+        )}
 
-                {/* Overlay con botón rápido */}
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                  <button className="bg-white text-purple-600 px-6 py-3 rounded-full font-bold transform scale-90 group-hover:scale-100 transition-transform">
-                    Vista Rápida
-                  </button>
-                </div>
-              </div>
-
-              {/* Información del producto */}
-              <div className="p-5">
-                <div className="flex items-center gap-1 mb-2">
-                  {[...Array(5)].map((_, i) => (
-                    <FaStar
-                      key={i}
-                      className={`text-sm ${
-                        i < Math.floor(product.rating)
-                          ? "text-yellow-400"
-                          : "text-gray-300"
-                      }`}
-                    />
-                  ))}
-                  <span className="text-sm text-gray-600 ml-2">
-                    ({product.rating})
-                  </span>
-                </div>
-
-                <h3 className="text-lg font-bold text-gray-800 mb-2 group-hover:text-purple-600 transition-colors">
-                  {product.name}
-                </h3>
-
-                <div className="flex items-center gap-2 mb-4">
-                  {product.discount > 0 && (
-                    <span className="text-gray-400 line-through text-sm">
-                      $
-                      {(product.price / (1 - product.discount / 100)).toFixed(
-                        2
-                      )}
-                    </span>
-                  )}
-                  <span className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
-                    ${product.price}
-                  </span>
-                </div>
-
-                <button
-                  onClick={() => openWhatsApp(product.name, product.price)}
-                  className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-xl font-bold hover:shadow-lg hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"
-                >
-                  <FaWhatsapp className="text-xl" />
-                  Comprar por WhatsApp
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {filteredProducts.length === 0 && (
+        {!isLoading && !error && filteredProducts.length === 0 && (
           <div className="text-center py-20">
             <div className="text-6xl mb-4">🔍</div>
             <h3 className="text-2xl font-bold text-gray-800 mb-2">
@@ -396,10 +397,10 @@ const HomePage2 = () => {
             <div>
               <h3 className="font-bold text-xl mb-4 text-purple-400">Ayuda</h3>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li>📧 soporte@catalogo.com</li>
-                <li>📱 +1 234 567 890</li>
-                <li>⏰ Lun - Vie: 9am - 6pm</li>
-                <li>📍 Tu Ciudad, País</li>
+                <li>📧 barrerajesica97@gmail.com</li>
+                <li>📱 +503 7370-7035</li>
+                <li>⏰ Todos los días</li>
+                <li>📍 Sonsonate, El Salvador</li>
               </ul>
             </div>
 
@@ -408,24 +409,18 @@ const HomePage2 = () => {
                 Síguenos
               </h3>
               <div className="flex gap-3 mb-4">
-                <a
-                  href="#"
-                  className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center hover:bg-purple-500 transition-colors transform hover:scale-110"
+                <button
+                  onClick={() => openSocialMedia("facebook")}
+                  className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center hover:bg-purple-500 transition-colors transform hover:scale-110 cursor-pointer"
                 >
                   <FaFacebook />
-                </a>
-                <a
-                  href="#"
-                  className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center hover:bg-pink-500 transition-colors transform hover:scale-110"
+                </button>
+                <button
+                  onClick={() => openSocialMedia("instagram")}
+                  className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center hover:bg-pink-500 transition-colors transform hover:scale-110 cursor-pointer"
                 >
                   <FaInstagram />
-                </a>
-                <a
-                  href="#"
-                  className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center hover:bg-blue-400 transition-colors transform hover:scale-110"
-                >
-                  <FaTwitter />
-                </a>
+                </button>
               </div>
               <p className="text-gray-400 text-sm">
                 Mantente al día con nuestras últimas ofertas
@@ -441,17 +436,6 @@ const HomePage2 = () => {
       </footer>
 
       <style jsx>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
         @keyframes gradient {
           0% {
             background-position: 0% 50%;
