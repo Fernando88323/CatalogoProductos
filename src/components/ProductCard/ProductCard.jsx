@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { FaWhatsapp, FaHeart, FaStar } from "react-icons/fa";
+import { FaWhatsapp, FaStar } from "react-icons/fa";
 
 const ProductCard = ({
   product,
   index,
-  favorites,
-  toggleFavorite,
   openWhatsApp,
   getProductImage,
   getProductRating,
@@ -45,90 +43,72 @@ const ProductCard = ({
         transitionDelay: `${index * 0.1}s`,
       }}
     >
-      {/* Imagen del producto - Enlace al detalle */}
-      <Link to={`/product/${product.id}`} className="block">
-        <div className="relative overflow-hidden">
-          <img
-            src={getProductImage(product)}
-            alt={product.nombre}
-            className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
-          />
-
-          {/* Badge de stock bajo */}
-          {product.stock > 0 && product.stock <= 5 && (
-            <div className="absolute top-3 left-3 bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
-              ¡Últimas {product.stock} unidades!
-            </div>
-          )}
-
-          {/* Overlay con botón rápido */}
-          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-            <span className="bg-white text-purple-600 px-6 py-3 rounded-full font-bold transform scale-90 group-hover:scale-100 transition-transform">
-              Ver Detalle
-            </span>
-          </div>
-        </div>
-      </Link>
-
-      {/* Botón de favorito - Separado del enlace */}
-      <button
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          toggleFavorite(product.id);
-        }}
-        className="absolute top-3 right-3 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform z-10"
-      >
-        <FaHeart
-          className={`text-xl ${
-            favorites.includes(product.id) ? "text-pink-500" : "text-gray-400"
-          } transition-colors`}
+      {/* Imagen del producto */}
+      <div className="relative overflow-hidden bg-gray-50">
+        <img
+          src={getProductImage(product)}
+          alt={product.nombre}
+          className="w-full h-56 sm:h-64 object-contain p-4 group-hover:scale-105 transition-transform duration-500"
         />
-      </button>
+
+        {/* Badge de stock bajo */}
+        {product.stock > 0 && product.stock <= 5 && (
+          <div className="absolute top-3 left-3 bg-orange-500 text-white px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-bold shadow-lg z-10">
+            ¡Últimas {product.stock}!
+          </div>
+        )}
+
+        {/* Overlay con botón rápido - solo en desktop */}
+        {/* <div className="hidden sm:flex absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 items-end justify-center pb-6">
+          <span className="bg-white text-purple-600 px-6 py-2.5 rounded-full font-bold text-sm shadow-xl transform translate-y-2 group-hover:translate-y-0 transition-transform">
+            👉 Ver Detalle
+          </span>
+        </div> */}
+      </div>
 
       {/* Información del producto */}
-      <div className="p-5">
+      <div className="p-3 sm:p-5">
+        {/* Rating */}
         <div className="flex items-center gap-1 mb-2">
           {[...Array(5)].map((_, i) => (
             <FaStar
               key={i}
-              className={`text-sm ${
+              className={`text-xs sm:text-sm ${
                 i < Math.floor(getProductRating())
                   ? "text-yellow-400"
                   : "text-gray-300"
               }`}
             />
           ))}
-          <span className="text-sm text-gray-600 ml-2">
+          <span className="text-xs sm:text-sm text-gray-600 ml-1 sm:ml-2">
             ({getProductRating()})
           </span>
         </div>
 
-        {/* Título clicable */}
-        <Link to={`/product/${product.id}`}>
-          <h3 className="text-lg font-bold text-gray-800 mb-2 group-hover:text-purple-600 transition-colors line-clamp-2 cursor-pointer">
-            {product.nombre}
-          </h3>
-        </Link>
+        {/* Título */}
+        <h3 className="text-base sm:text-lg font-bold text-gray-800 mb-2 transition-colors line-clamp-2 min-h-[3rem]">
+          {product.nombre}
+        </h3>
 
         {/* Categoría */}
         {product.categoria_nombre && (
-          <span className="inline-block text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded-full mb-3">
+          <span className="inline-block text-[10px] sm:text-xs bg-purple-100 text-purple-600 px-2 py-0.5 sm:py-1 rounded-full mb-2 sm:mb-3 font-medium">
             {product.categoria_nombre}
           </span>
         )}
 
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
+        {/* Precio */}
+        <div className="flex items-center gap-2 mb-3 sm:mb-4">
+          <span className="text-xl sm:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
             ${parseFloat(product.precio || 0).toFixed(2)}
           </span>
         </div>
 
-        {/* Botones de acción */}
-        <div className="flex gap-2">
+        {/* Botones de acción - Stack en móvil, row en desktop */}
+        <div className="flex flex-col sm:flex-row gap-2">
           <Link
             to={`/product/${product.id}`}
-            className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-3 rounded-xl font-bold hover:shadow-lg hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 text-sm"
+            className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl font-bold hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 text-xs sm:text-sm"
           >
             Ver Detalle
           </Link>
@@ -138,9 +118,9 @@ const ProductCard = ({
               e.stopPropagation();
               openWhatsApp(product.nombre, product.precio);
             }}
-            className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-3 rounded-xl font-bold hover:shadow-lg hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 text-sm"
+            className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl font-bold hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 text-xs sm:text-sm"
           >
-            <FaWhatsapp className="text-lg" />
+            <FaWhatsapp className="text-base sm:text-lg" />
             Comprar
           </button>
         </div>

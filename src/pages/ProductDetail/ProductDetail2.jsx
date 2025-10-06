@@ -1,10 +1,10 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import NavBar2 from "../../components/NavBar/NavBar2";
+import Footer from "../../components/Footer/Footer";
 import {
   FaWhatsapp,
   FaShoppingCart,
-  FaHeart,
   FaStar,
   FaArrowLeft,
   FaFacebook,
@@ -24,14 +24,9 @@ function ProductDetail2() {
   const [error, setError] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [quantity, setQuantity] = useState(1);
 
   const whatsappNumber = "50373707035";
-  const facebookUrl =
-    "https://www.facebook.com/jesydaniela?rdid=KQ5R4w7U7GpXEET2&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1CMAX7u5tS%2F#";
-  const instagramUrl =
-    "https://www.instagram.com/jesygbarrera/?utm_source=qr&igsh=MXZsOGlsbGdudmh2bw%3D%3D#";
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -88,11 +83,6 @@ function ProductDetail2() {
     window.open(url, "_blank");
   };
 
-  const openSocialMedia = (platform) => {
-    const url = platform === "facebook" ? facebookUrl : instagramUrl;
-    window.open(url, "_blank");
-  };
-
   const getProductImage = (imageIndex) => {
     return (
       product?.imagenes?.[imageIndex]?.image_url ||
@@ -104,11 +94,7 @@ function ProductDetail2() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
         {/* Header con NavBar2 */}
-        <NavBar2
-          favorites={[]}
-          showBackButton={true}
-          onWhatsAppClick={() => openWhatsApp()}
-        />
+        <NavBar2 showBackButton={true} onWhatsAppClick={() => openWhatsApp()} />
 
         {/* Loading Skeleton */}
         <div className="max-w-7xl mx-auto px-6 py-12">
@@ -164,12 +150,10 @@ function ProductDetail2() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header con NavBar2 */}
       <NavBar2
-        favorites={isFavorite ? [product.id] : []}
         showBackButton={true}
         onWhatsAppClick={() =>
           openWhatsApp(product.nombre, product.precio, quantity)
         }
-        onFavoriteClick={() => setIsFavorite(!isFavorite)}
       />
 
       {/* Contenido Principal */}
@@ -249,43 +233,46 @@ function ProductDetail2() {
           </div>
 
           {/* Información del Producto */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Título y Precio */}
-            <div className="bg-white rounded-2xl p-8 shadow-xl">
-              <h1 className="text-4xl font-extrabold text-gray-900 mb-4">
+            <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 shadow-xl">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 mb-3 sm:mb-4">
                 {product.nombre}
               </h1>
 
               {/* Categoría */}
               {product.categoria_nombre && (
-                <span className="inline-block bg-purple-100 text-purple-600 px-4 py-2 rounded-full text-sm font-semibold mb-4">
+                <span className="inline-block bg-purple-100 text-purple-600 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
                   {product.categoria_nombre}
                 </span>
               )}
 
               {/* Rating */}
-              <div className="flex items-center gap-2 mb-6">
+              <div className="flex items-center gap-2 mb-4 sm:mb-6">
                 <div className="flex items-center">
                   {[...Array(5)].map((_, i) => (
-                    <FaStar key={i} className="text-yellow-400 text-lg" />
+                    <FaStar
+                      key={i}
+                      className="text-yellow-400 text-sm sm:text-base md:text-lg"
+                    />
                   ))}
                 </div>
-                <span className="text-gray-600 text-sm">(4.5)</span>
+                <span className="text-gray-600 text-xs sm:text-sm">(4.5)</span>
               </div>
 
               {/* Precio */}
-              <div className="mb-6">
-                <div className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
+              <div className="mb-4 sm:mb-6">
+                <div className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
                   ${parseFloat(product.precio || 0).toFixed(2)}
                 </div>
               </div>
 
               {/* Stock */}
-              <div className="flex items-center gap-4 mb-6">
+              <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
                 <div className="flex items-center gap-2">
-                  <FaBox className="text-green-600" />
+                  <FaBox className="text-green-600 text-sm sm:text-base" />
                   <span
-                    className={`font-semibold ${
+                    className={`font-semibold text-sm sm:text-base ${
                       product.stock > 5 ? "text-green-600" : "text-orange-600"
                     }`}
                   >
@@ -295,14 +282,14 @@ function ProductDetail2() {
               </div>
 
               {/* Cantidad */}
-              <div className="mb-6">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <div className="mb-4 sm:mb-6">
+                <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
                   Cantidad
                 </label>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3 sm:gap-4">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-12 h-12 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center font-bold text-xl transition-colors"
+                    className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-200 hover:bg-gray-300 active:bg-gray-400 rounded-full flex items-center justify-center font-bold text-lg sm:text-xl transition-colors"
                   >
                     -
                   </button>
@@ -319,13 +306,13 @@ function ProductDetail2() {
                         )
                       )
                     }
-                    className="w-20 h-12 text-center text-xl font-bold border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                    className="w-16 h-10 sm:w-20 sm:h-12 text-center text-lg sm:text-xl font-bold border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
                   />
                   <button
                     onClick={() =>
                       setQuantity(Math.min(product.stock, quantity + 1))
                     }
-                    className="w-12 h-12 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center font-bold text-xl transition-colors"
+                    className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-200 hover:bg-gray-300 active:bg-gray-400 rounded-full flex items-center justify-center font-bold text-lg sm:text-xl transition-colors"
                   >
                     +
                   </button>
@@ -333,27 +320,15 @@ function ProductDetail2() {
               </div>
 
               {/* Botones de Acción */}
-              <div className="space-y-3">
+              <div className="space-y-2.5 sm:space-y-3">
                 <button
                   onClick={() =>
                     openWhatsApp(product.nombre, product.precio, quantity)
                   }
-                  className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3"
+                  className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-3 sm:px-6 sm:py-4 rounded-xl font-bold text-sm sm:text-base md:text-lg hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 sm:gap-3"
                 >
-                  <FaWhatsapp className="text-2xl" />
+                  <FaWhatsapp className="text-xl sm:text-2xl" />
                   Comprar por WhatsApp
-                </button>
-
-                <button
-                  onClick={() => setIsFavorite(!isFavorite)}
-                  className={`w-full border-2 px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 flex items-center justify-center gap-3 ${
-                    isFavorite
-                      ? "border-pink-500 text-pink-500 bg-pink-50"
-                      : "border-gray-300 text-gray-700 hover:border-pink-500 hover:text-pink-500"
-                  }`}
-                >
-                  <FaHeart />
-                  {isFavorite ? "Eliminar de Favoritos" : "Agregar a Favoritos"}
                 </button>
               </div>
             </div>
@@ -387,11 +362,11 @@ function ProductDetail2() {
 
         {/* Descripción */}
         {product.descripcion && (
-          <div className="mt-12 bg-white rounded-2xl p-8 shadow-xl">
-            <h2 className="text-2xl font-bold mb-4 text-gray-900">
+          <div className="mt-8 sm:mt-12 bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 shadow-xl">
+            <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-gray-900">
               Descripción del Producto
             </h2>
-            <p className="text-gray-700 leading-relaxed text-lg">
+            <p className="text-gray-700 leading-relaxed text-sm sm:text-base md:text-lg">
               {product.descripcion}
             </p>
           </div>
@@ -399,8 +374,8 @@ function ProductDetail2() {
 
         {/* Productos Relacionados */}
         {relatedProducts.length > 0 && (
-          <div className="mt-12">
-            <h2 className="text-3xl font-extrabold mb-8 text-gray-900">
+          <div className="mt-8 sm:mt-12">
+            <h2 className="text-2xl sm:text-3xl font-extrabold mb-4 sm:mb-6 md:mb-8 text-gray-900">
               También te podría interesar
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -441,63 +416,7 @@ function ProductDetail2() {
       </div>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white mt-20">
-        <div className="max-w-7xl mx-auto px-6 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
-                  <FaShoppingCart className="text-white" />
-                </div>
-                <h3 className="font-bold text-xl text-purple-400">
-                  Mi Catálogo
-                </h3>
-              </div>
-              <p className="text-gray-400 text-sm leading-relaxed">
-                Tu tienda online de confianza con los mejores productos y
-                precios del mercado.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="font-bold text-xl mb-4 text-purple-400">
-                Contacto
-              </h3>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li>📧 barrerajesica97@gmail.com</li>
-                <li>📱 +503 7370-7035</li>
-                <li>⏰ Todos los días</li>
-                <li>📍 Sonsonate, El Salvador</li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-bold text-xl mb-4 text-purple-400">
-                Síguenos
-              </h3>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => openSocialMedia("facebook")}
-                  className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center hover:bg-purple-500 transition-colors transform hover:scale-110"
-                >
-                  <FaFacebook />
-                </button>
-                <button
-                  onClick={() => openSocialMedia("instagram")}
-                  className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center hover:bg-pink-500 transition-colors transform hover:scale-110"
-                >
-                  <FaInstagram />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="border-t border-gray-800 pt-8 text-center text-gray-400 text-sm">
-            <p>© 2025 Mi Catálogo - Todos los derechos reservados</p>
-            <p className="mt-2">Hecho con ❤️ para nuestros clientes</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
 
       <style jsx>{`
         @keyframes fadeInUp {

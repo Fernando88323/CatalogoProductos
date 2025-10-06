@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import NavBar2 from "../../components/NavBar/NavBar2";
+import toast, { Toaster } from "react-hot-toast";
 
 const AdminLogin = () => {
+  const navigate = useNavigate();
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showLogin, setShowLogin] = useState(true);
@@ -45,8 +48,12 @@ const AdminLogin = () => {
     const files = Array.from(e.target.files);
 
     if (files.length > 10) {
-      alert(
-        "⚠️ Máximo 10 imágenes permitidas. Se seleccionarán las primeras 10."
+      toast.error(
+        "Máximo 10 imágenes permitidas. Se seleccionarán las primeras 10.",
+        {
+          icon: "⚠️",
+          duration: 4000,
+        }
       );
       setImages(files.slice(0, 10));
     } else {
@@ -58,22 +65,30 @@ const AdminLogin = () => {
     e.preventDefault();
 
     if (images.length === 0) {
-      alert("Por favor selecciona al menos una imagen");
+      toast.error("Por favor selecciona al menos una imagen", {
+        icon: "📸",
+      });
       return;
     }
 
     if (images.length > 10) {
-      alert("⚠️ Máximo 10 imágenes permitidas");
+      toast.error("Máximo 10 imágenes permitidas", {
+        icon: "⚠️",
+      });
       return;
     }
 
     if (!productData.nombre.trim()) {
-      alert("Por favor ingresa el nombre del producto");
+      toast.error("Por favor ingresa el nombre del producto", {
+        icon: "📦",
+      });
       return;
     }
 
     if (!productData.categoria_id) {
-      alert("Por favor selecciona una categoría");
+      toast.error("Por favor selecciona una categoría", {
+        icon: "🏷️",
+      });
       return;
     }
 
@@ -102,7 +117,10 @@ const AdminLogin = () => {
       const data = await response.json();
 
       if (data.success) {
-        alert(`✅ Producto creado exitosamente!\n${data.message}`);
+        toast.success(`Producto creado exitosamente!\n${data.message}`, {
+          icon: "✨",
+          duration: 4000,
+        });
         console.log("Producto creado:", data.data);
 
         // Limpiar formulario
@@ -120,12 +138,16 @@ const AdminLogin = () => {
         const fileInput = document.querySelector('input[type="file"]');
         if (fileInput) fileInput.value = "";
       } else {
-        alert(`❌ Error: ${data.message || "Error al crear el producto"}`);
+        toast.error(data.message || "Error al crear el producto", {
+          icon: "❌",
+        });
         console.error("Error del servidor:", data);
       }
     } catch (error) {
       console.error("Error al crear producto:", error);
-      alert("❌ Error de conexión al crear el producto");
+      toast.error("Error de conexión al crear el producto", {
+        icon: "❌",
+      });
     } finally {
       setLoading(false);
     }
@@ -150,9 +172,14 @@ const AdminLogin = () => {
       setShowLogin(false);
       setShowAdminMenu(true);
       localStorage.setItem("isAdmin", "true");
-      alert("✅ Acceso de administrador concedido");
+      toast.success("Acceso de administrador concedido", {
+        icon: "🔐",
+        duration: 3000,
+      });
     } else {
-      alert("❌ Contraseña incorrecta");
+      toast.error("Contraseña incorrecta", {
+        icon: "❌",
+      });
     }
     setAdminPassword("");
   };
@@ -163,7 +190,9 @@ const AdminLogin = () => {
     setShowAddForm(false);
     setShowAdminMenu(false);
     localStorage.removeItem("isAdmin");
-    alert("✅ Sesión de administrador cerrada");
+    toast.success("Sesión de administrador cerrada", {
+      icon: "🚪",
+    });
   };
 
   // Función para mostrar el formulario de crear producto
@@ -180,20 +209,52 @@ const AdminLogin = () => {
 
   return (
     <div>
-      <NavBar2 favorites={[]} showBackButton={false} showAdminButton={true} />
+      {/* Toast Notifications */}
+      <Toaster
+        position="top-right"
+        reverseOrder={false}
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: "linear-gradient(135deg, #1e293b 0%, #881337 100%)",
+            color: "#fff",
+            border: "2px solid rgba(255, 255, 255, 0.2)",
+            borderRadius: "16px",
+            backdropFilter: "blur(10px)",
+            fontSize: "14px",
+            fontWeight: "bold",
+            padding: "16px",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)",
+          },
+          success: {
+            iconTheme: {
+              primary: "#10b981",
+              secondary: "#fff",
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: "#ef4444",
+              secondary: "#fff",
+            },
+          },
+        }}
+      />
+
+      <NavBar2 showBackButton={false} showAdminButton={true} />
 
       {showLogin && (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-rose-900 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
           {/* Efectos de fondo animados */}
           <div className="absolute inset-0 opacity-20">
-            <div className="absolute top-20 left-20 w-72 h-72 bg-blue-500 rounded-full blur-3xl animate-pulse"></div>
-            <div className="absolute bottom-20 right-20 w-96 h-96 bg-indigo-500 rounded-full blur-3xl animate-pulse delay-1000"></div>
+            <div className="absolute top-20 left-20 w-72 h-72 bg-rose-500 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-20 right-20 w-96 h-96 bg-pink-500 rounded-full blur-3xl animate-pulse delay-1000"></div>
           </div>
 
           <div className="relative bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-2xl shadow-2xl w-full max-w-md">
             {/* Icono de Admin */}
             <div className="flex justify-center mb-6">
-              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
+              <div className="w-20 h-20 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg">
                 <span className="text-4xl">🔐</span>
               </div>
             </div>
@@ -201,7 +262,7 @@ const AdminLogin = () => {
             <h2 className="text-3xl font-extrabold text-center text-white mb-2">
               Panel de Administración
             </h2>
-            <p className="text-center text-blue-200 mb-8 text-sm">
+            <p className="text-center text-rose-200 mb-8 text-sm">
               Acceso exclusivo para administradores
             </p>
 
@@ -214,20 +275,20 @@ const AdminLogin = () => {
                   type="password"
                   value={adminPassword}
                   onChange={(e) => setAdminPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-white placeholder-blue-200/50 transition-all"
+                  className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent text-white placeholder-rose-200/50 transition-all"
                   placeholder="Ingrese la contraseña"
                   required
                 />
               </div>
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 px-4 rounded-lg font-semibold transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl shadow-lg"
+                className="w-full bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white py-3 px-4 rounded-lg font-semibold transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl shadow-lg"
               >
                 🚀 Ingresar al Panel
               </button>
             </form>
             <div className="mt-6 p-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg">
-              <p className="text-xs text-blue-200 text-center">
+              <p className="text-xs text-rose-200 text-center">
                 💡 <span className="font-semibold">Contraseña de prueba:</span>{" "}
                 admin123
               </p>
@@ -238,17 +299,17 @@ const AdminLogin = () => {
 
       {/* Menú de Administrador */}
       {showAdminMenu && (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-rose-900 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
           {/* Efectos de fondo */}
           <div className="absolute inset-0 opacity-20">
-            <div className="absolute top-20 left-20 w-72 h-72 bg-blue-500 rounded-full blur-3xl animate-pulse"></div>
-            <div className="absolute bottom-20 right-20 w-96 h-96 bg-indigo-500 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute top-20 left-20 w-72 h-72 bg-rose-500 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-20 right-20 w-96 h-96 bg-pink-500 rounded-full blur-3xl animate-pulse"></div>
           </div>
 
           <div className="relative bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-2xl shadow-2xl w-full max-w-lg">
             {/* Avatar del Admin */}
             <div className="flex justify-center mb-6">
-              <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center shadow-lg ring-4 ring-white/20">
+              <div className="w-24 h-24 bg-gradient-to-br from-rose-400 to-pink-500 rounded-full flex items-center justify-center shadow-lg ring-4 ring-white/20">
                 <span className="text-5xl">👨‍💼</span>
               </div>
             </div>
@@ -256,19 +317,19 @@ const AdminLogin = () => {
             <h2 className="text-3xl font-extrabold text-center text-white mb-2">
               Panel de Control
             </h2>
-            <p className="text-blue-200 text-center mb-8">
+            <p className="text-rose-200 text-center mb-8">
               Gestiona tu catálogo de productos
             </p>
 
             <div className="space-y-4">
-              {/* Botón Crear Producto */}
+              {/* Botón Gestión de Inventario */}
               <button
-                onClick={handleShowCreateForm}
-                className="w-full group relative overflow-hidden bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl shadow-lg flex items-center justify-center gap-3"
+                onClick={() => navigate("/admin/inventory")}
+                className="w-full group relative overflow-hidden bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl shadow-lg flex items-center justify-center gap-3"
               >
                 <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
-                <span className="text-2xl">➕</span>
-                <span className="text-lg">Crear Nuevo Producto</span>
+                <span className="text-2xl">📦</span>
+                <span className="text-lg">Gestión de Inventario</span>
               </button>
 
               {/* Botón Cerrar Sesión */}
@@ -283,7 +344,7 @@ const AdminLogin = () => {
 
             {/* Info adicional */}
             <div className="mt-6 pt-6 border-t border-white/20">
-              <p className="text-center text-blue-200 text-sm">
+              <p className="text-center text-rose-200 text-sm">
                 ✨ Sesión de administrador activa
               </p>
             </div>
@@ -292,16 +353,16 @@ const AdminLogin = () => {
       )}
 
       {isAdmin && showAddForm && (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 py-4 sm:py-8 px-3 sm:px-4 relative overflow-hidden">
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-rose-900 to-slate-900 py-4 sm:py-8 px-3 sm:px-4 relative overflow-hidden">
           {/* Efectos de fondo animados */}
           <div className="absolute inset-0 opacity-20">
-            <div className="absolute top-20 left-20 w-72 h-72 bg-blue-500 rounded-full blur-3xl animate-pulse"></div>
-            <div className="absolute bottom-20 right-20 w-96 h-96 bg-indigo-500 rounded-full blur-3xl animate-pulse delay-1000"></div>
+            <div className="absolute top-20 left-20 w-72 h-72 bg-rose-500 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-20 right-20 w-96 h-96 bg-pink-500 rounded-full blur-3xl animate-pulse delay-1000"></div>
           </div>
 
           <div className="max-w-3xl mx-auto relative z-10">
             {/* Header del formulario */}
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-t-2xl p-4 sm:p-6 shadow-lg border border-white/10">
+            <div className="bg-gradient-to-r from-rose-600 to-pink-600 rounded-t-2xl p-4 sm:p-6 shadow-lg border border-white/10">
               <div className="flex items-center justify-between gap-2">
                 <button
                   onClick={handleBackToMenu}
@@ -325,7 +386,7 @@ const AdminLogin = () => {
                 {/* Nombre del producto */}
                 <div>
                   <label className="flex items-center gap-2 text-xs sm:text-sm font-bold text-white mb-1.5 sm:mb-2">
-                    <span className="text-blue-400">📦</span>
+                    <span className="text-rose-400">📦</span>
                     Nombre del producto *
                   </label>
                   <input
@@ -333,7 +394,7 @@ const AdminLogin = () => {
                     name="nombre"
                     value={productData.nombre}
                     onChange={handleInputChange}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all hover:border-blue-400 text-white placeholder-blue-200/50 text-sm sm:text-base"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all hover:border-rose-400 text-white placeholder-rose-200/50 text-sm sm:text-base"
                     placeholder="Ej: Collar de perlas elegante"
                     required
                   />
@@ -342,7 +403,7 @@ const AdminLogin = () => {
                 {/* Descripción */}
                 <div>
                   <label className="flex items-center gap-2 text-xs sm:text-sm font-bold text-white mb-1.5 sm:mb-2">
-                    <span className="text-blue-400">📝</span>
+                    <span className="text-rose-400">📝</span>
                     Descripción
                   </label>
                   <textarea
@@ -350,7 +411,7 @@ const AdminLogin = () => {
                     value={productData.descripcion}
                     onChange={handleInputChange}
                     rows="3"
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all hover:border-blue-400 resize-none text-white placeholder-blue-200/50 text-sm sm:text-base"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all hover:border-rose-400 resize-none text-white placeholder-rose-200/50 text-sm sm:text-base"
                     placeholder="Descripción detallada del producto..."
                   />
                 </div>
@@ -359,7 +420,7 @@ const AdminLogin = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
                     <label className="flex items-center gap-2 text-xs sm:text-sm font-bold text-white mb-1.5 sm:mb-2">
-                      <span className="text-blue-400">💰</span>
+                      <span className="text-rose-400">💰</span>
                       Precio
                     </label>
                     <input
@@ -369,13 +430,13 @@ const AdminLogin = () => {
                       onChange={handleInputChange}
                       step="0.01"
                       min="0"
-                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all hover:border-blue-400 text-white placeholder-blue-200/50 text-sm sm:text-base"
+                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all hover:border-rose-400 text-white placeholder-rose-200/50 text-sm sm:text-base"
                       placeholder="0.00"
                     />
                   </div>
                   <div>
                     <label className="flex items-center gap-2 text-xs sm:text-sm font-bold text-white mb-1.5 sm:mb-2">
-                      <span className="text-blue-400">📊</span>
+                      <span className="text-rose-400">📊</span>
                       Stock
                     </label>
                     <input
@@ -384,7 +445,7 @@ const AdminLogin = () => {
                       value={productData.stock}
                       onChange={handleInputChange}
                       min="0"
-                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all hover:border-blue-400 text-white placeholder-blue-200/50 text-sm sm:text-base"
+                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all hover:border-rose-400 text-white placeholder-rose-200/50 text-sm sm:text-base"
                       placeholder="0"
                     />
                   </div>
@@ -394,14 +455,14 @@ const AdminLogin = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
                     <label className="flex items-center gap-2 text-xs sm:text-sm font-bold text-white mb-1.5 sm:mb-2">
-                      <span className="text-blue-400">🏷️</span>
+                      <span className="text-rose-400">🏷️</span>
                       Categoría *
                     </label>
                     <select
                       name="categoria_id"
                       value={productData.categoria_id}
                       onChange={handleInputChange}
-                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all hover:border-blue-400 cursor-pointer text-white text-sm sm:text-base"
+                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all hover:border-rose-400 cursor-pointer text-white text-sm sm:text-base"
                       required
                     >
                       <option value="" className="bg-slate-800">
@@ -420,14 +481,14 @@ const AdminLogin = () => {
                   </div>
                   <div>
                     <label className="flex items-center gap-2 text-xs sm:text-sm font-bold text-white mb-1.5 sm:mb-2">
-                      <span className="text-blue-400">⭐</span>
+                      <span className="text-rose-400">⭐</span>
                       Marca *
                     </label>
                     <select
                       name="marca_id"
                       value={productData.marca_id}
                       onChange={handleInputChange}
-                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all hover:border-blue-400 cursor-pointer text-white text-sm sm:text-base"
+                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all hover:border-rose-400 cursor-pointer text-white text-sm sm:text-base"
                       required
                     >
                       {marcas.map((marca) => (
@@ -447,10 +508,10 @@ const AdminLogin = () => {
                 <div>
                   <label className="flex items-center justify-between text-xs sm:text-sm font-bold text-white mb-1.5 sm:mb-2">
                     <span className="flex items-center gap-2">
-                      <span className="text-blue-400">📸</span>
+                      <span className="text-rose-400">📸</span>
                       Imágenes del producto *
                     </span>
-                    <span className="text-blue-300 text-xs font-normal">
+                    <span className="text-rose-300 text-xs font-normal">
                       Máx. 10 imágenes
                     </span>
                   </label>
@@ -461,7 +522,7 @@ const AdminLogin = () => {
                       multiple
                       accept="image/*"
                       onChange={handleImageChange}
-                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all hover:border-blue-400 text-white text-xs sm:text-sm file:mr-3 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-3 sm:file:px-4 file:rounded-lg file:border-0 file:bg-gradient-to-r file:from-blue-500 file:to-indigo-500 file:text-white file:font-semibold file:cursor-pointer hover:file:from-blue-600 hover:file:to-indigo-600 file:text-xs sm:file:text-sm"
+                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all hover:border-rose-400 text-white text-xs sm:text-sm file:mr-3 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-3 sm:file:px-4 file:rounded-lg file:border-0 file:bg-gradient-to-r file:from-rose-500 file:to-pink-500 file:text-white file:font-semibold file:cursor-pointer hover:file:from-rose-600 hover:file:to-pink-600 file:text-xs sm:file:text-sm"
                     />
                   </div>
                   {images.length > 0 && (
@@ -474,7 +535,7 @@ const AdminLogin = () => {
                       </div>
                       {/* Lista de archivos seleccionados */}
                       <div className="bg-white/5 backdrop-blur-sm border border-white/20 rounded-lg p-2 sm:p-3 max-h-32 overflow-y-auto">
-                        <p className="text-xs text-blue-300 font-semibold mb-2">
+                        <p className="text-xs text-rose-300 font-semibold mb-2">
                           Archivos:
                         </p>
                         <ul className="space-y-1 text-xs text-white/80">
@@ -483,9 +544,9 @@ const AdminLogin = () => {
                               key={index}
                               className="flex items-center gap-2 truncate"
                             >
-                              <span className="text-blue-400">•</span>
+                              <span className="text-rose-400">•</span>
                               <span className="truncate">{file.name}</span>
-                              <span className="text-blue-300/60 text-[10px] flex-shrink-0">
+                              <span className="text-rose-300/60 text-[10px] flex-shrink-0">
                                 ({(file.size / 1024).toFixed(1)} KB)
                               </span>
                             </li>
@@ -504,7 +565,7 @@ const AdminLogin = () => {
                     className={`w-full py-3 sm:py-4 px-4 sm:px-6 rounded-xl text-white font-bold text-base sm:text-lg transition-all duration-300 transform ${
                       loading
                         ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:scale-[1.02] hover:shadow-2xl shadow-lg"
+                        : "bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 hover:scale-[1.02] hover:shadow-2xl shadow-lg"
                     }`}
                   >
                     {loading ? (

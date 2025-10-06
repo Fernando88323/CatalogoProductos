@@ -3,10 +3,10 @@ import { Link } from "react-router-dom";
 import { useProducts } from "../../hooks/useProducts";
 import NavBar2 from "../../components/NavBar/NavBar2";
 import ProductCard from "../../components/ProductCard/ProductCard";
+import Footer from "../../components/Footer/Footer";
 import {
   FaWhatsapp,
   FaShoppingCart,
-  FaHeart,
   FaStar,
   FaSearch,
   FaFilter,
@@ -16,10 +16,10 @@ import {
   FaShippingFast,
   FaShieldAlt,
   FaTags,
+  FaExternalLinkAlt,
 } from "react-icons/fa";
 
 const HomePage2 = () => {
-  const [favorites, setFavorites] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [visibleSections, setVisibleSections] = useState({});
@@ -75,16 +75,6 @@ const HomePage2 = () => {
   }, [data?.items]);
 
   const whatsappNumber = "50373707035";
-  const facebookUrl =
-    "https://www.facebook.com/jesydaniela?rdid=KQ5R4w7U7GpXEET2&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1CMAX7u5tS%2F#"; // Cambia por tu página de Facebook
-  const instagramUrl =
-    "https://www.instagram.com/jesygbarrera/?utm_source=qr&igsh=MXZsOGlsbGdudmh2bw%3D%3D#"; // Cambia por tu cuenta de Instagram
-
-  const toggleFavorite = (id) => {
-    setFavorites((prev) =>
-      prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id]
-    );
-  };
 
   const openWhatsApp = (productName = "", productPrice = "") => {
     let message = "Hola! Estoy interesado en sus productos";
@@ -94,21 +84,6 @@ const HomePage2 = () => {
     const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
       message
     )}`;
-    window.open(url, "_blank");
-  };
-
-  const openSocialMedia = (platform) => {
-    let url = "";
-    switch (platform) {
-      case "facebook":
-        url = facebookUrl;
-        break;
-      case "instagram":
-        url = instagramUrl;
-        break;
-      default:
-        return;
-    }
     window.open(url, "_blank");
   };
 
@@ -148,12 +123,7 @@ const HomePage2 = () => {
   return (
     <div className="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
       {/* Header con NavBar2 */}
-      <NavBar2
-        favorites={favorites}
-        showBackButton={false}
-        onWhatsAppClick={() => openWhatsApp()}
-        onFavoriteClick={() => console.log("Favoritos:", favorites)}
-      />
+      <NavBar2 showBackButton={false} onWhatsAppClick={() => openWhatsApp()} />
 
       {/* Hero mejorado */}
       <section
@@ -269,17 +239,17 @@ const HomePage2 = () => {
       <main
         ref={productsRef}
         id="products-section"
-        className={`max-w-7xl mx-auto p-6 md:p-10 transition-all duration-1000 delay-300 ${
+        className={`max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 md:py-10 transition-all duration-1000 delay-300 ${
           visibleSections["products-section"]
             ? "opacity-100 translate-y-0"
             : "opacity-0 translate-y-10"
         }`}
       >
-        <div className="mb-8">
-          <h2 className="text-3xl font-extrabold text-gray-800 mb-2">
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-800 mb-2">
             Productos Destacados
           </h2>
-          <p className="text-gray-600">
+          <p className="text-sm sm:text-base text-gray-600">
             {isLoading
               ? "Cargando productos..."
               : `${filteredProducts.length} producto${
@@ -308,14 +278,12 @@ const HomePage2 = () => {
 
         {/* Products grid */}
         {!isLoading && !error && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
             {filteredProducts.map((product, index) => (
               <ProductCard
                 key={product.id}
                 product={product}
                 index={index}
-                favorites={favorites}
-                toggleFavorite={toggleFavorite}
                 openWhatsApp={openWhatsApp}
                 getProductImage={getProductImage}
                 getProductRating={getProductRating}
@@ -338,102 +306,7 @@ const HomePage2 = () => {
       </main>
 
       {/* Footer mejorado */}
-      <footer className="bg-gray-900 text-white mt-20">
-        <div className="max-w-7xl mx-auto px-6 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
-                  <FaShoppingCart className="text-white" />
-                </div>
-                <h3 className="font-bold text-xl text-purple-400">
-                  Mi Catálogo
-                </h3>
-              </div>
-              <p className="text-gray-400 text-sm leading-relaxed">
-                Tu tienda online de confianza con los mejores productos y
-                precios del mercado.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="font-bold text-xl mb-4 text-purple-400">Compra</h3>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <a
-                    href="#"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    Cómo Comprar
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    Métodos de Pago
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    Envíos
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    Devoluciones
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-bold text-xl mb-4 text-purple-400">Ayuda</h3>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li>📧 barrerajesica97@gmail.com</li>
-                <li>📱 +503 7370-7035</li>
-                <li>⏰ Todos los días</li>
-                <li>📍 Sonsonate, El Salvador</li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-bold text-xl mb-4 text-purple-400">
-                Síguenos
-              </h3>
-              <div className="flex gap-3 mb-4">
-                <button
-                  onClick={() => openSocialMedia("facebook")}
-                  className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center hover:bg-purple-500 transition-colors transform hover:scale-110 cursor-pointer"
-                >
-                  <FaFacebook />
-                </button>
-                <button
-                  onClick={() => openSocialMedia("instagram")}
-                  className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center hover:bg-pink-500 transition-colors transform hover:scale-110 cursor-pointer"
-                >
-                  <FaInstagram />
-                </button>
-              </div>
-              <p className="text-gray-400 text-sm">
-                Mantente al día con nuestras últimas ofertas
-              </p>
-            </div>
-          </div>
-
-          <div className="border-t border-gray-800 pt-8 text-center text-gray-400 text-sm">
-            <p>© 2025 Mi Catálogo - Todos los derechos reservados</p>
-            <p className="mt-2">Hecho con ❤️ para nuestros clientes</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
 
       <style jsx>{`
         @keyframes gradient {

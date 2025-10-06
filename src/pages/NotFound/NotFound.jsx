@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
-import Navbar from "../../components/Navbar/navbar";
+import NavBar2 from "../../components/NavBar/NavBar2";
 
 function NotFoundPage() {
   return (
     <div>
-      <Navbar />
+      <NavBar2 />
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-6">
         <h1 className="text-9xl font-extrabold text-gray-300 animate-pulse">
           404
