@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import NavBar2 from "../../components/NavBar/NavBar2";
+import NavBar2 from "../../components/NavBar/NavBar";
 import ProductImage from "../../components/ProductImage";
 import toast, { Toaster } from "react-hot-toast";
 import {
@@ -153,7 +153,12 @@ const InventoryManagement = () => {
     const matchesCategory = filterCategory
       ? product.categoria_id === parseInt(filterCategory)
       : true;
-    return matchesSearch && matchesCategory;
+
+    // Filtro de stock agotado
+    const matchesStock =
+      filterStatus === "agotados" ? product.stock === 0 : true;
+
+    return matchesSearch && matchesCategory && matchesStock;
   });
 
   // Abrir modal de edición
@@ -674,6 +679,9 @@ const InventoryManagement = () => {
                 <option value="inactivos" className="bg-slate-800">
                   ⏸️ Solo Inactivos
                 </option>
+                <option value="agotados" className="bg-slate-800">
+                  ⚠️ Solo Agotados (Stock 0)
+                </option>
                 <option value="todos" className="bg-slate-800">
                   📋 Todos
                 </option>
@@ -789,14 +797,16 @@ const InventoryManagement = () => {
                       <td className="px-6 py-4">
                         <span
                           className={`inline-block px-3 py-1 rounded-full text-sm font-bold ${
-                            product.stock > 10
+                            product.stock === 0
+                              ? "bg-red-500/20 text-red-300 border border-red-500/30 animate-pulse"
+                              : product.stock > 10
                               ? "bg-green-500/20 text-green-300 border border-green-500/30"
-                              : product.stock > 0
-                              ? "bg-orange-500/20 text-orange-300 border border-orange-500/30"
-                              : "bg-red-500/20 text-red-300 border border-red-500/30"
+                              : "bg-orange-500/20 text-orange-300 border border-orange-500/30"
                           }`}
                         >
-                          {product.stock} unid.
+                          {product.stock === 0
+                            ? "⚠️ Agotado"
+                            : `${product.stock} unid.`}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center">
@@ -870,45 +880,48 @@ const InventoryManagement = () => {
 
       {/* Modal de Edición */}
       {showEditModal && selectedProduct && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-gradient-to-br from-slate-900 to-rose-900 border-2 border-white/20 rounded-2xl shadow-2xl w-full max-w-3xl my-8">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+          <div className="bg-gradient-to-br from-slate-900 to-rose-900 border-2 border-white/20 rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-3xl my-4 sm:my-8">
             {/* Header del modal */}
-            <div className="bg-gradient-to-r from-blue-600 to-cyan-600 p-6 rounded-t-2xl border-b border-white/20">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-extrabold text-white flex items-center gap-3">
-                  <FaEdit className="text-3xl" />
-                  Editar Producto
+            <div className="bg-gradient-to-r from-blue-600 to-cyan-600 p-3 sm:p-4 md:p-6 rounded-t-xl sm:rounded-t-2xl border-b border-white/20">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-extrabold text-white flex items-center gap-2 sm:gap-3">
+                  <FaEdit className="text-xl sm:text-2xl md:text-3xl" />
+                  <span className="truncate">Editar Producto</span>
                 </h2>
                 <button
                   onClick={() => {
                     setShowEditModal(false);
                     setNewImages([]);
                   }}
-                  className="text-white hover:bg-white/20 p-2 rounded-lg transition-all"
+                  className="text-white hover:bg-white/20 p-1.5 sm:p-2 rounded-lg transition-all flex-shrink-0"
                 >
-                  <FaTimes className="text-2xl" />
+                  <FaTimes className="text-xl sm:text-2xl" />
                 </button>
               </div>
             </div>
 
             {/* Contenido del modal */}
-            <div className="p-6 max-h-[70vh] overflow-y-auto">
-              <form onSubmit={handleUpdateProduct} className="space-y-4">
+            <div className="p-3 sm:p-4 md:p-6 max-h-[70vh] overflow-y-auto">
+              <form
+                onSubmit={handleUpdateProduct}
+                className="space-y-3 sm:space-y-4"
+              >
                 {/* Imagen actual */}
-                <div className="bg-white/5 backdrop-blur-sm border border-white/20 rounded-xl p-4">
-                  <label className="flex items-center gap-2 text-sm font-bold text-white mb-3">
-                    <FaImage className="text-rose-400" />
+                <div className="bg-white/5 backdrop-blur-sm border border-white/20 rounded-lg sm:rounded-xl p-3 sm:p-4">
+                  <label className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-bold text-white mb-2 sm:mb-3">
+                    <FaImage className="text-rose-400 text-sm sm:text-base" />
                     Imagen actual
                   </label>
-                  <div className="flex items-center gap-4">
-                    <div className="w-32 h-32 rounded-lg overflow-hidden bg-white/10 border-2 border-white/20 p-2 flex items-center justify-center">
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-lg overflow-hidden bg-white/10 border-2 border-white/20 p-1.5 sm:p-2 flex items-center justify-center flex-shrink-0">
                       <ProductImage
                         productId={selectedProduct.id}
                         alt={selectedProduct.nombre}
                         className="w-full h-full object-contain"
                       />
                     </div>
-                    <div className="text-rose-200 text-sm">
+                    <div className="text-rose-200 text-xs sm:text-sm">
                       {selectedProduct.imagenes?.length || 0} imagen(es)
                       asociada(s)
                     </div>
@@ -917,7 +930,7 @@ const InventoryManagement = () => {
 
                 {/* Nombre */}
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-bold text-white mb-2">
+                  <label className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-bold text-white mb-1.5 sm:mb-2">
                     <span className="text-rose-400">📦</span>
                     Nombre del producto *
                   </label>
@@ -926,14 +939,14 @@ const InventoryManagement = () => {
                     name="nombre"
                     value={editFormData.nombre}
                     onChange={handleEditInputChange}
-                    className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 text-white placeholder-rose-200/50"
+                    className="w-full px-3 py-2 sm:px-4 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 text-white placeholder-rose-200/50 text-sm sm:text-base"
                     required
                   />
                 </div>
 
                 {/* Descripción */}
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-bold text-white mb-2">
+                  <label className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-bold text-white mb-1.5 sm:mb-2">
                     <span className="text-rose-400">📝</span>
                     Descripción
                   </label>
@@ -942,14 +955,14 @@ const InventoryManagement = () => {
                     value={editFormData.descripcion}
                     onChange={handleEditInputChange}
                     rows="3"
-                    className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none text-white placeholder-rose-200/50"
+                    className="w-full px-3 py-2 sm:px-4 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none text-white placeholder-rose-200/50 text-sm sm:text-base"
                   />
                 </div>
 
                 {/* Precio y Stock */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
-                    <label className="flex items-center gap-2 text-sm font-bold text-white mb-2">
+                    <label className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-bold text-white mb-1.5 sm:mb-2">
                       <span className="text-rose-400">💰</span>
                       Precio
                     </label>
@@ -960,11 +973,11 @@ const InventoryManagement = () => {
                       onChange={handleEditInputChange}
                       step="0.01"
                       min="0"
-                      className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 text-white placeholder-rose-200/50"
+                      className="w-full px-3 py-2 sm:px-4 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 text-white placeholder-rose-200/50 text-sm sm:text-base"
                     />
                   </div>
                   <div>
-                    <label className="flex items-center gap-2 text-sm font-bold text-white mb-2">
+                    <label className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-bold text-white mb-1.5 sm:mb-2">
                       <span className="text-rose-400">📊</span>
                       Stock
                     </label>
@@ -974,14 +987,14 @@ const InventoryManagement = () => {
                       value={editFormData.stock}
                       onChange={handleEditInputChange}
                       min="0"
-                      className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 text-white placeholder-rose-200/50"
+                      className="w-full px-3 py-2 sm:px-4 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 text-white placeholder-rose-200/50 text-sm sm:text-base"
                     />
                   </div>
                 </div>
 
                 {/* Categoría */}
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-bold text-white mb-2">
+                  <label className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-bold text-white mb-1.5 sm:mb-2">
                     <span className="text-rose-400">🏷️</span>
                     Categoría *
                   </label>
@@ -989,7 +1002,7 @@ const InventoryManagement = () => {
                     name="categoria_id"
                     value={editFormData.categoria_id}
                     onChange={handleEditInputChange}
-                    className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer text-white"
+                    className="w-full px-3 py-2 sm:px-4 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer text-white text-sm sm:text-base"
                     required
                   >
                     <option value="" className="bg-slate-800">
@@ -1009,20 +1022,22 @@ const InventoryManagement = () => {
 
                 {/* Nuevas imágenes */}
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-bold text-white mb-2">
+                  <label className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-bold text-white mb-1.5 sm:mb-2">
                     <span className="text-rose-400">📸</span>
-                    Agregar nuevas imágenes (opcional)
+                    <span className="truncate">
+                      Agregar nuevas imágenes (opcional)
+                    </span>
                   </label>
                   <input
                     type="file"
                     multiple
                     accept="image/*"
                     onChange={handleImageChange}
-                    className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 text-white text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-gradient-to-r file:from-blue-500 file:to-cyan-500 file:text-white file:font-semibold file:cursor-pointer hover:file:from-blue-600 hover:file:to-cyan-600"
+                    className="w-full px-3 py-2 sm:px-4 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 text-white text-xs sm:text-sm file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-3 sm:file:px-4 file:rounded-lg file:border-0 file:bg-gradient-to-r file:from-blue-500 file:to-cyan-500 file:text-white file:font-semibold file:cursor-pointer hover:file:from-blue-600 hover:file:to-cyan-600 file:text-xs sm:file:text-sm"
                   />
                   {newImages.length > 0 && (
-                    <div className="mt-2 p-3 bg-blue-500/20 backdrop-blur-sm border-l-4 border-blue-400 rounded-lg">
-                      <p className="text-sm text-blue-300 font-semibold">
+                    <div className="mt-2 p-2 sm:p-3 bg-blue-500/20 backdrop-blur-sm border-l-4 border-blue-400 rounded-lg">
+                      <p className="text-xs sm:text-sm text-blue-300 font-semibold">
                         ✅ {newImages.length} nueva(s) imagen(es)
                         seleccionada(s)
                       </p>
@@ -1031,21 +1046,21 @@ const InventoryManagement = () => {
                 </div>
 
                 {/* Botones */}
-                <div className="flex gap-3 pt-4">
+                <div className="flex gap-2 sm:gap-3 pt-3 sm:pt-4">
                   <button
                     type="button"
                     onClick={() => {
                       setShowEditModal(false);
                       setNewImages([]);
                     }}
-                    className="flex-1 bg-white/10 hover:bg-white/20 text-white py-3 px-4 rounded-xl font-bold transition-all border border-white/30"
+                    className="flex-1 bg-white/10 hover:bg-white/20 text-white py-2 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl font-bold transition-all border border-white/30 text-sm sm:text-base"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
                     disabled={loading}
-                    className={`flex-1 py-3 px-4 rounded-xl text-white font-bold transition-all flex items-center justify-center gap-2 ${
+                    className={`flex-1 py-2 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl text-white font-bold transition-all flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-base ${
                       loading
                         ? "bg-gray-400 cursor-not-allowed"
                         : "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 hover:scale-[1.02] hover:shadow-xl"
@@ -1249,14 +1264,14 @@ const InventoryManagement = () => {
 
       {/* Modal de Creación de Producto */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-gradient-to-br from-slate-900 to-rose-900 border-2 border-white/20 rounded-2xl shadow-2xl w-full max-w-3xl my-8">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+          <div className="bg-gradient-to-br from-slate-900 to-rose-900 border-2 border-white/20 rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-3xl my-4 sm:my-8">
             {/* Header del modal */}
-            <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-6 rounded-t-2xl border-b border-white/20">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-extrabold text-white flex items-center gap-3">
-                  <FaPlus className="text-3xl" />
-                  Crear Nuevo Producto
+            <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-3 sm:p-4 md:p-6 rounded-t-xl sm:rounded-t-2xl border-b border-white/20">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-extrabold text-white flex items-center gap-2 sm:gap-3">
+                  <FaPlus className="text-xl sm:text-2xl md:text-3xl" />
+                  <span className="truncate">Crear Nuevo Producto</span>
                 </h2>
                 <button
                   onClick={() => {
@@ -1271,19 +1286,22 @@ const InventoryManagement = () => {
                       marca_id: "1",
                     });
                   }}
-                  className="text-white hover:bg-white/20 p-2 rounded-lg transition-all"
+                  className="text-white hover:bg-white/20 p-1.5 sm:p-2 rounded-lg transition-all flex-shrink-0"
                 >
-                  <FaTimes className="text-2xl" />
+                  <FaTimes className="text-xl sm:text-2xl" />
                 </button>
               </div>
             </div>
 
             {/* Contenido del modal */}
-            <div className="p-6 max-h-[70vh] overflow-y-auto">
-              <form onSubmit={handleCreateProduct} className="space-y-4">
+            <div className="p-3 sm:p-4 md:p-6 max-h-[70vh] overflow-y-auto">
+              <form
+                onSubmit={handleCreateProduct}
+                className="space-y-3 sm:space-y-4"
+              >
                 {/* Nombre */}
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-bold text-white mb-2">
+                  <label className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-bold text-white mb-1.5 sm:mb-2">
                     <span className="text-rose-400">📦</span>
                     Nombre del producto *
                   </label>
@@ -1292,7 +1310,7 @@ const InventoryManagement = () => {
                     name="nombre"
                     value={createFormData.nombre}
                     onChange={handleCreateInputChange}
-                    className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 text-white placeholder-rose-200/50"
+                    className="w-full px-3 py-2 sm:px-4 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 text-white placeholder-rose-200/50 text-sm sm:text-base"
                     placeholder="Ej: Collar de perlas elegante"
                     required
                   />
@@ -1300,7 +1318,7 @@ const InventoryManagement = () => {
 
                 {/* Descripción */}
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-bold text-white mb-2">
+                  <label className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-bold text-white mb-1.5 sm:mb-2">
                     <span className="text-rose-400">📝</span>
                     Descripción
                   </label>
@@ -1309,15 +1327,15 @@ const InventoryManagement = () => {
                     value={createFormData.descripcion}
                     onChange={handleCreateInputChange}
                     rows="3"
-                    className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 resize-none text-white placeholder-rose-200/50"
+                    className="w-full px-3 py-2 sm:px-4 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 resize-none text-white placeholder-rose-200/50 text-sm sm:text-base"
                     placeholder="Descripción detallada del producto..."
                   />
                 </div>
 
                 {/* Precio y Stock */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
-                    <label className="flex items-center gap-2 text-sm font-bold text-white mb-2">
+                    <label className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-bold text-white mb-1.5 sm:mb-2">
                       <span className="text-rose-400">💰</span>
                       Precio
                     </label>
@@ -1328,12 +1346,12 @@ const InventoryManagement = () => {
                       onChange={handleCreateInputChange}
                       step="0.01"
                       min="0"
-                      className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 text-white placeholder-rose-200/50"
+                      className="w-full px-3 py-2 sm:px-4 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 text-white placeholder-rose-200/50 text-sm sm:text-base"
                       placeholder="0.00"
                     />
                   </div>
                   <div>
-                    <label className="flex items-center gap-2 text-sm font-bold text-white mb-2">
+                    <label className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-bold text-white mb-1.5 sm:mb-2">
                       <span className="text-rose-400">📊</span>
                       Stock
                     </label>
@@ -1343,16 +1361,16 @@ const InventoryManagement = () => {
                       value={createFormData.stock}
                       onChange={handleCreateInputChange}
                       min="0"
-                      className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 text-white placeholder-rose-200/50"
+                      className="w-full px-3 py-2 sm:px-4 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 text-white placeholder-rose-200/50 text-sm sm:text-base"
                       placeholder="0"
                     />
                   </div>
                 </div>
 
                 {/* Categoría y Marca */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
-                    <label className="flex items-center gap-2 text-sm font-bold text-white mb-2">
+                    <label className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-bold text-white mb-1.5 sm:mb-2">
                       <span className="text-rose-400">🏷️</span>
                       Categoría *
                     </label>
@@ -1360,7 +1378,7 @@ const InventoryManagement = () => {
                       name="categoria_id"
                       value={createFormData.categoria_id}
                       onChange={handleCreateInputChange}
-                      className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 cursor-pointer text-white"
+                      className="w-full px-3 py-2 sm:px-4 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 cursor-pointer text-white text-sm sm:text-base"
                       required
                     >
                       <option value="" className="bg-slate-800">
@@ -1378,7 +1396,7 @@ const InventoryManagement = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="flex items-center gap-2 text-sm font-bold text-white mb-2">
+                    <label className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-bold text-white mb-1.5 sm:mb-2">
                       <span className="text-rose-400">⭐</span>
                       Marca *
                     </label>
@@ -1386,7 +1404,7 @@ const InventoryManagement = () => {
                       name="marca_id"
                       value={createFormData.marca_id}
                       onChange={handleCreateInputChange}
-                      className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 cursor-pointer text-white"
+                      className="w-full px-3 py-2 sm:px-4 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 cursor-pointer text-white text-sm sm:text-base"
                       required
                     >
                       {marcas.map((marca) => (
@@ -1404,13 +1422,13 @@ const InventoryManagement = () => {
 
                 {/* Imágenes */}
                 <div>
-                  <label className="flex items-center justify-between text-sm font-bold text-white mb-2">
-                    <span className="flex items-center gap-2">
+                  <label className="flex items-center justify-between text-xs sm:text-sm font-bold text-white mb-1.5 sm:mb-2">
+                    <span className="flex items-center gap-1.5 sm:gap-2">
                       <span className="text-rose-400">📸</span>
-                      Imágenes del producto *
+                      <span className="truncate">Imágenes del producto *</span>
                     </span>
-                    <span className="text-rose-300 text-xs font-normal">
-                      Máx. 10 imágenes
+                    <span className="text-rose-300 text-[10px] sm:text-xs font-normal flex-shrink-0">
+                      Máx. 10
                     </span>
                   </label>
                   <input
@@ -1418,30 +1436,32 @@ const InventoryManagement = () => {
                     multiple
                     accept="image/*"
                     onChange={handleCreateImageChange}
-                    className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 text-white text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-gradient-to-r file:from-green-500 file:to-emerald-500 file:text-white file:font-semibold file:cursor-pointer hover:file:from-green-600 hover:file:to-emerald-600"
+                    className="w-full px-3 py-2 sm:px-4 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 text-white text-xs sm:text-sm file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-3 sm:file:px-4 file:rounded-lg file:border-0 file:bg-gradient-to-r file:from-green-500 file:to-emerald-500 file:text-white file:font-semibold file:cursor-pointer hover:file:from-green-600 hover:file:to-emerald-600 file:text-xs sm:file:text-sm"
                   />
                   {createImages.length > 0 && (
                     <div className="mt-2 space-y-2">
-                      <div className="p-3 bg-green-500/20 backdrop-blur-sm border-l-4 border-green-400 rounded-lg">
-                        <p className="text-sm text-green-300 font-semibold flex items-center gap-2">
+                      <div className="p-2 sm:p-3 bg-green-500/20 backdrop-blur-sm border-l-4 border-green-400 rounded-lg">
+                        <p className="text-xs sm:text-sm text-green-300 font-semibold flex items-center gap-1.5 sm:gap-2">
                           <span>✅</span>
                           {createImages.length} imagen(es) seleccionada(s)
                         </p>
                       </div>
                       {/* Lista de archivos */}
-                      <div className="bg-white/5 backdrop-blur-sm border border-white/20 rounded-lg p-3 max-h-32 overflow-y-auto">
-                        <p className="text-xs text-rose-300 font-semibold mb-2">
+                      <div className="bg-white/5 backdrop-blur-sm border border-white/20 rounded-lg p-2 sm:p-3 max-h-32 overflow-y-auto">
+                        <p className="text-[10px] sm:text-xs text-rose-300 font-semibold mb-1.5 sm:mb-2">
                           Archivos:
                         </p>
-                        <ul className="space-y-1 text-xs text-white/80">
+                        <ul className="space-y-1 text-[10px] sm:text-xs text-white/80">
                           {createImages.map((file, index) => (
                             <li
                               key={index}
-                              className="flex items-center gap-2 truncate"
+                              className="flex items-center gap-1.5 sm:gap-2 truncate"
                             >
-                              <span className="text-rose-400">•</span>
+                              <span className="text-rose-400 flex-shrink-0">
+                                •
+                              </span>
                               <span className="truncate">{file.name}</span>
-                              <span className="text-rose-300/60 text-[10px] flex-shrink-0">
+                              <span className="text-rose-300/60 text-[9px] sm:text-[10px] flex-shrink-0">
                                 ({(file.size / 1024).toFixed(1)} KB)
                               </span>
                             </li>
@@ -1453,7 +1473,7 @@ const InventoryManagement = () => {
                 </div>
 
                 {/* Botones */}
-                <div className="flex gap-3 pt-4">
+                <div className="flex gap-2 sm:gap-3 pt-3 sm:pt-4">
                   <button
                     type="button"
                     onClick={() => {
@@ -1468,14 +1488,14 @@ const InventoryManagement = () => {
                         marca_id: "1",
                       });
                     }}
-                    className="flex-1 bg-white/10 hover:bg-white/20 text-white py-3 px-4 rounded-xl font-bold transition-all border border-white/30"
+                    className="flex-1 bg-white/10 hover:bg-white/20 text-white py-2 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl font-bold transition-all border border-white/30 text-sm sm:text-base"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
                     disabled={loading}
-                    className={`flex-1 py-3 px-4 rounded-xl text-white font-bold transition-all flex items-center justify-center gap-2 ${
+                    className={`flex-1 py-2 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl text-white font-bold transition-all flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-base ${
                       loading
                         ? "bg-gray-400 cursor-not-allowed"
                         : "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 hover:scale-[1.02] hover:shadow-xl"

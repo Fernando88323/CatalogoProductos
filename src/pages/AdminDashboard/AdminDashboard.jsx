@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import { useProducts } from "../../hooks/useProducts";
-import Navbar from "../../components/Navbar/navbar";
+import Navbar from "../../components/NavBar/NavBar";
 
 function AdminDashboard() {
   const { data, isLoading, error, refetch } = useProducts({

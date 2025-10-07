@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import NavBar2 from "../../components/NavBar/NavBar2";
+import NavBar2 from "../../components/NavBar/NavBar";
 
 function NotFoundPage() {
   return (

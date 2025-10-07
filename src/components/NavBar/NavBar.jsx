@@ -1,131 +1,106 @@
-import { Link } from "react-router-dom";
-import { useState } from "react";
-import logo from "../../assets/logoOficial.jpg"; // Asegúrate de tener un logo en esta ruta
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  FaWhatsapp,
+  FaShoppingCart,
+  FaUserShield,
+  FaHome,
+  FaExternalLinkAlt,
+} from "react-icons/fa";
 
-function Navbar() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+const NavBar = ({
+  showBackButton = false,
+  showAdminButton = true,
+  onWhatsAppClick,
+}) => {
+  const navigate = useNavigate();
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
+  const whatsappNumber = "50373707035";
+
+  const handleWhatsApp = () => {
+    if (onWhatsAppClick) {
+      onWhatsAppClick();
+    } else {
+      const message = "Hola! Estoy interesado en sus productos";
+      const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+        message
+      )}`;
+      window.open(url, "_blank");
+    }
+  };
+
+  const handleHomeClick = () => {
+    navigate("/");
+  };
+
+  const handleAdminClick = () => {
+    navigate("/admin/login");
   };
 
   return (
-    <nav className="sticky top-0 z-30 bg-white text-black shadow-lg">
-      <div className="mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo y nombre */}
-          <div className="flex items-center space-x-3">
-            <Link to="/" className="flex items-center space-x-2">
-              <img src={logo} alt="Mi Tienda" className="h-8 w-auto" />
-              <span className="text-black font-bold text-lg md:text-xl">
-                Jesé Shop
-              </span>
-            </Link>
+    <header className="bg-white shadow-lg sticky top-0 z-50 backdrop-blur-sm bg-white/95">
+      <div className="max-w-10xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+        <div className="flex justify-between items-center gap-3">
+          {/* Left side - Logo */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center flex-shrink-0">
+              <FaShoppingCart className="text-white text-lg sm:text-xl" />
+            </div>
+            <h1 className="text-lg sm:text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600 whitespace-nowrap">
+              Jesé Shop
+            </h1>
           </div>
 
-          {/* Links de navegación - Desktop */}
-          <div className="hidden md:flex items-center space-x-6">
-            <Link
-              to="/"
-              className="text-black font-semibold hover:text-blue-500 transition-colors duration-200"
+          {/* Right side - Actions */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Catálogo Externo */}
+            <a
+              href="https://catalogodigital.somosbelcorp.com/SV?consultant=MDUxNjEyNg=="
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-1.5 sm:gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 sm:px-4 h-9 sm:h-10 rounded-full hover:shadow-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-300 font-semibold text-sm flex-shrink-0"
+              title="Catálogo Digital Belcorp"
             >
-              Inicio
-            </Link>
-            <Link
-              to="/admin/dashboard"
-              className="text-black font-semibold hover:text-blue-500 transition-colors duration-200"
-            >
-              Catálogo
-            </Link>
-            <Link
-              to="/contacto"
-              className="text-black font-semibold hover:text-blue-500 transition-colors duration-200"
-            >
-              Contacto
-            </Link>
-            <Link
-              to="/admin/login"
-              className="block px-3 py-2 font-semibold text-black hover:text-blue-500 rounded-md transition-colors duration-200"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Admin
-            </Link>
-          </div>
+              <FaExternalLinkAlt className="text-base sm:text-lg" />
+              <span className="hidden xl:inline">Catálogo</span>
+            </a>
 
-          {/* Botón hamburguesa - Mobile */}
-          <div className="md:hidden">
+            {/* Inicio */}
             <button
-              onClick={toggleMenu}
-              className="text-black focus:outline-none transition-colors duration-200"
-              aria-label="Abrir menú"
+              onClick={handleHomeClick}
+              className="flex items-center justify-center gap-1.5 sm:gap-2 bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 sm:px-4 h-9 sm:h-10 rounded-full hover:shadow-lg hover:from-orange-600 hover:to-red-600 transition-all duration-300 font-semibold text-sm flex-shrink-0"
+              title="Volver al Inicio"
             >
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+              <FaHome className="text-base sm:text-lg" />
+              <span className="hidden sm:inline">Inicio</span>
+            </button>
+
+            {/* Admin */}
+            {showAdminButton && (
+              <button
+                onClick={handleAdminClick}
+                className="flex items-center justify-center gap-1.5 sm:gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-3 sm:px-4 h-9 sm:h-10 rounded-full hover:shadow-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 font-semibold text-sm flex-shrink-0"
+                title="Panel de Administración"
               >
-                {isMenuOpen ? (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                ) : (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                )}
-              </svg>
+                <FaUserShield className="text-base sm:text-lg" />
+                <span className="hidden lg:inline">Admin</span>
+              </button>
+            )}
+
+            {/* WhatsApp */}
+            <button
+              onClick={handleWhatsApp}
+              className="flex items-center justify-center gap-1.5 sm:gap-2 bg-gradient-to-r from-green-500 to-green-600 text-white px-3 sm:px-5 h-9 sm:h-10 rounded-full hover:shadow-lg hover:from-green-600 hover:to-green-700 transition-all duration-300 font-semibold text-sm flex-shrink-0"
+              title="Contactar por WhatsApp"
+            >
+              <FaWhatsapp className="text-lg sm:text-xl" />
+              <span className="hidden sm:inline">Contactar</span>
             </button>
           </div>
         </div>
-
-        {/* Menú móvil */}
-        <div
-          className={`md:hidden transition-all duration-300 ease-in-out ${
-            isMenuOpen
-              ? "max-h-64 opacity-100"
-              : "max-h-0 opacity-0 overflow-hidden"
-          }`}
-        >
-          <div className="py-2 space-y-1 border-t border-gray-500">
-            <Link
-              to="/"
-              className="block px-3 py-2 text-black font-semibold hover:text-blue-500 rounded-md transition-colors duration-200"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Inicio
-            </Link>
-            <Link
-              to="/admin/dashboard"
-              className="block px-3 py-2 text-black font-semibold hover:text-blue-500 rounded-md transition-colors duration-200"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Catálogo
-            </Link>
-            <Link
-              to="/contacto"
-              className="block px-3 py-2 text-black font-semibold hover:text-blue-500 rounded-md transition-colors duration-200"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Contacto
-            </Link>
-            <Link
-              to="/admin/login"
-              className="block px-3 py-2 text-black font-semibold hover:text-blue-500 rounded-md transition-colors duration-200"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Admin
-            </Link>
-          </div>
-        </div>
       </div>
-    </nav>
+    </header>
   );
-}
-export default Navbar;
+};
+
+export default NavBar;

@@ -51,6 +51,13 @@ const ProductCard = ({
           className="w-full h-56 sm:h-64 object-contain p-4 group-hover:scale-105 transition-transform duration-500"
         />
 
+        {/* Badge de agotado */}
+        {product.stock === 0 && (
+          <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-bold shadow-lg z-10">
+            Agotado
+          </div>
+        )}
+
         {/* Badge de stock bajo */}
         {product.stock > 0 && product.stock <= 5 && (
           <div className="absolute top-3 left-3 bg-orange-500 text-white px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-bold shadow-lg z-10">
@@ -112,7 +119,7 @@ const ProductCard = ({
           >
             Ver Detalle
           </Link>
-          <button
+          {/*   <button
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -121,8 +128,8 @@ const ProductCard = ({
             className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl font-bold hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 text-xs sm:text-sm"
           >
             <FaWhatsapp className="text-base sm:text-lg" />
-            Comprar
-          </button>
+            {product.stock === 0 ? "Consultar" : "Comprar"}
+          </button> */}
         </div>
       </div>
     </div>
