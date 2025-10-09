@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import API_CONFIG from "../config/api";
 
 export const useProducts = ({ page = 1, limit = 12 } = {}) => {
   const [data, setData] = useState({ items: [] });
@@ -12,7 +13,7 @@ export const useProducts = ({ page = 1, limit = 12 } = {}) => {
       try {
         // Obtener productos únicamente del servidor usando el nuevo endpoint
         const response = await fetch(
-          `http://localhost:4000/upload/productos?page=${page}&limit=${limit}`
+          `${API_CONFIG.PRODUCTOS.LIST}?page=${page}&limit=${limit}`
         );
 
         if (response.ok) {
@@ -57,7 +58,7 @@ export const useProducts = ({ page = 1, limit = 12 } = {}) => {
       setError(null);
       try {
         const response = await fetch(
-          `http://localhost:4000/upload/productos?page=${page}&limit=${limit}`
+          `${API_CONFIG.PRODUCTOS.LIST}?page=${page}&limit=${limit}`
         );
 
         if (response.ok) {

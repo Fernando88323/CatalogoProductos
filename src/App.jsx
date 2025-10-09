@@ -1,9 +1,10 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import HomePage from "./pages/HomePage/homePage";
+import HomePage from "./pages/HomePage/HomePage";
 import AdminLogin from "./pages/AdminLogin/AdminLogin";
 import ProductDetail from "./pages/ProductDetail/ProductDetail";
 import AdminDashboard from "./pages/AdminDashboard/AdminDashboard";
-import Contacto from "./pages/Contacto/contacto";
+import InventoryManagement from "./pages/InventoryManagement/InventoryManagement";
+import NotFoundPage from "./pages/NotFound/notFound";
 
 const App = () => {
   return (
@@ -11,9 +12,10 @@ const App = () => {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/product/:id" element={<ProductDetail />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/login" element={<AdminLogin />} />
-        <Route path="/contacto" element={<Contacto />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/inventory" element={<InventoryManagement />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Router>
   );

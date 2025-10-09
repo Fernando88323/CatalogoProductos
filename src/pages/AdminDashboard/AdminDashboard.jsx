@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import { useProducts } from "../../hooks/useProducts";
-import Navbar from "../../components/Navbar/navbar";
+import Navbar from "../../components/NavBar/NavBar";
+import API_CONFIG from "../../config/api";
 
 function AdminDashboard() {
   const { data, isLoading, error, refetch } = useProducts({
@@ -109,7 +110,7 @@ function AdminDashboard() {
         formData.append("images", file);
       });
 
-      const response = await fetch("http://localhost:4000/upload/upload", {
+      const response = await fetch(API_CONFIG.PRODUCTOS.CREATE, {
         method: "POST",
         body: formData,
       });

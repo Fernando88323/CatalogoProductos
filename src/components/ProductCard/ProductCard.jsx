@@ -1,52 +1,133 @@
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import { FaStar } from "react-icons/fa";
 
-function ProductCard({ product }) {
-  // URL de imagen por defecto o placeholder
-  const defaultImage =
-    product.imagenes?.[0]?.image_url ||
-    "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiBubyBkaXNwb25pYmxlPC90ZXh0Pjwvc3ZnPg==";
+const ProductCard = ({ product, index, getProductImage, getProductRating }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const cardRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: "0px 0px -50px 0px",
+      }
+    );
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <div className="border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-xl hover:border-blue-300 transition-all duration-300 bg-white">
-      <img
-        src={defaultImage}
-        alt={product.imagenes?.[0]?.alt || product.nombre}
-        className="w-full h-48 object-contain mb-3 rounded-md bg-gray-50"
-      />
-      <h2 className="font-bold text-lg mb-2 text-gray-900">{product.nombre}</h2>
-      <p className="text-gray-700 font-semibold text-xl mb-3">
-        ${parseFloat(product.precio || 0).toFixed(2)}
-      </p>
+    <div
+      ref={cardRef}
+      className={`group bg-white shadow-lg rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-gray-100 ${
+        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+      }`}
+      style={{
+        transitionDelay: `${index * 0.1}s`,
+      }}
+    >
+      {/* Imagen del producto */}
+      <div className="relative overflow-hidden bg-gray-50">
+        <img
+          src={getProductImage(product)}
+          alt={product.nombre}
+          className="w-full h-56 sm:h-64 object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+        />
 
-      {/* Stock y estado con mejor diseño */}
-      <div className="mt-2 flex flex-wrap items-center gap-2 mb-4">
-        {typeof product.stock !== "undefined" && (
-          <span
-            className={`text-xs font-semibold px-3 py-1 rounded-full ${
-              product.stock <= 0
-                ? "bg-red-100 text-red-800 border border-red-200"
-                : "bg-green-100 text-green-800 border border-green-200"
-            }`}
-          >
-            {product.stock <= 0 ? "Agotado" : `${product.stock} en stock`}
-          </span>
+        {/* Badge de agotado */}
+        {product.stock === 0 && (
+          <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-bold shadow-lg z-10">
+            Agotado
+          </div>
         )}
 
-        {typeof product.activo !== "undefined" && !product.activo && (
-          <span className="text-xs font-semibold px-3 py-1 rounded-full bg-gray-200 text-gray-800 border border-gray-300">
-            No disponible
-          </span>
+        {/* Badge de stock bajo */}
+        {product.stock > 0 && product.stock <= 5 && (
+          <div className="absolute top-3 left-3 bg-orange-500 text-white px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-bold shadow-lg z-10">
+            ¡Últimas {product.stock}!
+          </div>
         )}
+
+        {/* Overlay con botón rápido - solo en desktop */}
+        {/* <div className="hidden sm:flex absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 items-end justify-center pb-6">
+          <span className="bg-white text-purple-600 px-6 py-2.5 rounded-full font-bold text-sm shadow-xl transform translate-y-2 group-hover:translate-y-0 transition-transform">
+            👉 Ver Detalle
+          </span>
+        </div> */}
       </div>
 
-      {/* Enlace al detalle del producto */}
-      <Link
-        to={`/product/${product.id}`}
-        className="block bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-3 rounded-lg text-center hover:from-blue-700 hover:to-blue-800 hover:shadow-lg transition-all duration-200 font-medium"
-      >
-        Ver Detalle
-      </Link>
+      {/* Información del producto */}
+      <div className="p-3 sm:p-5">
+        {/* Rating */}
+        <div className="flex items-center gap-1 mb-2">
+          {[...Array(5)].map((_, i) => (
+            <FaStar
+              key={i}
+              className={`text-xs sm:text-sm ${
+                i < Math.floor(getProductRating())
+                  ? "text-yellow-400"
+                  : "text-gray-300"
+              }`}
+            />
+          ))}
+          <span className="text-xs sm:text-sm text-gray-600 ml-1 sm:ml-2">
+            ({getProductRating()})
+          </span>
+        </div>
+
+        {/* Título */}
+        <h3 className="text-base sm:text-lg font-bold text-gray-800 mb-2 transition-colors line-clamp-2 min-h-[3rem]">
+          {product.nombre}
+        </h3>
+
+        {/* Categoría */}
+        {product.categoria_nombre && (
+          <span className="inline-block text-[10px] sm:text-xs bg-purple-100 text-purple-600 px-2 py-0.5 sm:py-1 rounded-full mb-2 sm:mb-3 font-medium">
+            {product.categoria_nombre}
+          </span>
+        )}
+
+        {/* Precio */}
+        <div className="flex items-center gap-2 mb-3 sm:mb-4">
+          <span className="text-xl sm:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
+            ${parseFloat(product.precio || 0).toFixed(2)}
+          </span>
+        </div>
+
+        {/* Botones de acción - Stack en móvil, row en desktop */}
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Link
+            to={`/product/${product.id}`}
+            className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl font-bold hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 text-xs sm:text-sm"
+          >
+            Ver Detalle
+          </Link>
+          {/*   <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              openWhatsApp(product.nombre, product.precio);
+            }}
+            className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl font-bold hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 text-xs sm:text-sm"
+          >
+            <FaWhatsapp className="text-base sm:text-lg" />
+            {product.stock === 0 ? "Consultar" : "Comprar"}
+          </button> */}
+        </div>
+      </div>
     </div>
   );
-}
+};
+
 export default ProductCard;

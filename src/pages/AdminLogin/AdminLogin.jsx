@@ -1,14 +1,23 @@
 import { useState, useEffect } from "react";
-import Navbar from "../../components/Navbar/navbar";
+import { useNavigate } from "react-router-dom";
+import NavBar2 from "../../components/NavBar/NavBar";
+import toast, { Toaster } from "react-hot-toast";
+import API_CONFIG from "../../config/api";
 
 const AdminLogin = () => {
+  const navigate = useNavigate();
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showLogin, setShowLogin] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [adminPassword, setAdminPassword] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showAdminMenu, setShowAdminMenu] = useState(false);
+  const [loginData, setLoginData] = useState({
+    email: "",
+    password: "",
+  });
+  const [showPassword, setShowPassword] = useState(false);
   const [productData, setProductData] = useState({
     nombre: "",
     descripcion: "",
@@ -41,21 +50,51 @@ const AdminLogin = () => {
     }));
   };
 
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+
+    if (files.length > 10) {
+      toast.error(
+        "Máximo 10 imágenes permitidas. Se seleccionarán las primeras 10.",
+        {
+          icon: "⚠️",
+          duration: 4000,
+        }
+      );
+      setImages(files.slice(0, 10));
+    } else {
+      setImages(files);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (images.length === 0) {
-      alert("Por favor selecciona al menos una imagen");
+      toast.error("Por favor selecciona al menos una imagen", {
+        icon: "📸",
+      });
+      return;
+    }
+
+    if (images.length > 10) {
+      toast.error("Máximo 10 imágenes permitidas", {
+        icon: "⚠️",
+      });
       return;
     }
 
     if (!productData.nombre.trim()) {
-      alert("Por favor ingresa el nombre del producto");
+      toast.error("Por favor ingresa el nombre del producto", {
+        icon: "📦",
+      });
       return;
     }
 
     if (!productData.categoria_id) {
-      alert("Por favor selecciona una categoría");
+      toast.error("Por favor selecciona una categoría", {
+        icon: "🏷️",
+      });
       return;
     }
 
@@ -76,15 +115,19 @@ const AdminLogin = () => {
         formData.append("images", file);
       });
 
-      const response = await fetch("http://localhost:4000/upload/upload", {
+      const response = await fetch(API_CONFIG.PRODUCTOS.CREATE, {
         method: "POST",
+        credentials: "include", // Incluir cookies en la petición
         body: formData,
       });
 
       const data = await response.json();
 
       if (data.success) {
-        alert(`✅ Producto creado exitosamente!\n${data.message}`);
+        toast.success(`Producto creado exitosamente!\n${data.message}`, {
+          icon: "✨",
+          duration: 4000,
+        });
         console.log("Producto creado:", data.data);
 
         // Limpiar formulario
@@ -102,12 +145,16 @@ const AdminLogin = () => {
         const fileInput = document.querySelector('input[type="file"]');
         if (fileInput) fileInput.value = "";
       } else {
-        alert(`❌ Error: ${data.message || "Error al crear el producto"}`);
+        toast.error(data.message || "Error al crear el producto", {
+          icon: "❌",
+        });
         console.error("Error del servidor:", data);
       }
     } catch (error) {
       console.error("Error al crear producto:", error);
-      alert("❌ Error de conexión al crear el producto");
+      toast.error("Error de conexión al crear el producto", {
+        icon: "❌",
+      });
     } finally {
       setLoading(false);
     }
@@ -115,37 +162,162 @@ const AdminLogin = () => {
 
   // Verificar si ya está autenticado como admin
   useEffect(() => {
-    const adminStatus = localStorage.getItem("isAdmin");
-    if (adminStatus === "true") {
-      setIsAdmin(true);
-      setShowLogin(false);
-      setShowAdminMenu(true);
-    }
+    // Verificar si existe una sesión activa en el backend (cookie HTTP-only)
+    const checkSession = async () => {
+      try {
+        const response = await fetch(API_CONFIG.AUTH.VERIFY, {
+          method: "GET",
+          credentials: "include", // Incluir cookies en la petición
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          // El usuario tiene una sesión válida
+          setIsAdmin(true);
+          setShowLogin(false);
+          setShowAdminMenu(true);
+        }
+      } catch (error) {
+        console.error("Error al verificar sesión:", error);
+        // Si hay error, simplemente mantener el login visible
+      }
+    };
+
+    checkSession();
   }, []);
 
-  // Simple autenticación de admin (sin roles complejos)
-  const handleAdminLogin = (e) => {
-    e.preventDefault();
-    // Contraseña simple para el admin (en un entorno real usar algo más seguro)
-    if (adminPassword === "admin123") {
-      setIsAdmin(true);
-      setShowLogin(false);
-      setShowAdminMenu(true);
-      localStorage.setItem("isAdmin", "true");
-      alert("✅ Acceso de administrador concedido");
-    } else {
-      alert("❌ Contraseña incorrecta");
-    }
-    setAdminPassword("");
+  // Validación de email
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
   };
 
-  const handleLogout = () => {
+  // Manejo de cambios en el formulario de login
+  const handleLoginInputChange = (e) => {
+    const { name, value } = e.target;
+    setLoginData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  // Simple autenticación de admin (sin roles complejos)
+  const handleAdminLogin = async (e) => {
+    e.preventDefault();
+
+    // Validaciones del cliente
+    if (!loginData.email.trim()) {
+      toast.error("Por favor ingresa tu email", {
+        icon: "📧",
+      });
+      return;
+    }
+
+    if (!validateEmail(loginData.email)) {
+      toast.error("Por favor ingresa un email válido", {
+        icon: "⚠️",
+      });
+      return;
+    }
+
+    if (!loginData.password) {
+      toast.error("Por favor ingresa tu contraseña", {
+        icon: "🔒",
+      });
+      return;
+    }
+
+    if (loginData.password.length < 6) {
+      toast.error("La contraseña debe tener al menos 6 caracteres", {
+        icon: "⚠️",
+      });
+      return;
+    }
+
+    setLoginLoading(true);
+
+    try {
+      const response = await fetch(API_CONFIG.AUTH.LOGIN, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // Incluir cookies en la petición
+        body: JSON.stringify({
+          email: loginData.email.trim(),
+          password: loginData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      // Log para debugging
+      console.log("Response status:", response.status);
+      console.log("Response data:", data);
+
+      // Verificar si el login fue exitoso
+      if (data.success === true || response.ok) {
+        // El backend maneja las cookies HTTP-only automáticamente
+        // No necesitamos guardar nada en localStorage
+
+        // Actualizar estados para mostrar el panel
+        setIsAdmin(true);
+        setShowLogin(false);
+        setShowAdminMenu(true);
+
+        const adminName =
+          data.user && data.user.nombre ? data.user.nombre : "Administrador";
+        toast.success(`¡Bienvenido, ${adminName}!`, {
+          icon: "🎉",
+          duration: 3000,
+        });
+
+        // Limpiar formulario
+        setLoginData({ email: "", password: "" });
+      } else {
+        // Manejar diferentes errores del servidor
+        const errorMessage =
+          data.message || data.error || "Credenciales incorrectas";
+        console.error("Error de login:", errorMessage);
+        toast.error(errorMessage, {
+          icon: "❌",
+          duration: 4000,
+        });
+      }
+    } catch (error) {
+      console.error("Error en la autenticación:", error);
+      toast.error("Error de conexión con el servidor", {
+        icon: "🔌",
+        duration: 4000,
+      });
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      // Llamar al endpoint de logout en el backend para limpiar la cookie
+      await fetch(API_CONFIG.AUTH.LOGOUT, {
+        method: "POST",
+        credentials: "include", // Incluir cookies en la petición
+      });
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+    }
+
+    // Actualizar estados locales
     setIsAdmin(false);
     setShowLogin(true);
     setShowAddForm(false);
     setShowAdminMenu(false);
-    localStorage.removeItem("isAdmin");
-    alert("✅ Sesión de administrador cerrada");
+    setLoginData({ email: "", password: "" });
+
+    toast.success("Sesión cerrada correctamente", {
+      icon: "👋",
+      duration: 3000,
+    });
   };
 
   // Función para mostrar el formulario de crear producto
@@ -162,231 +334,474 @@ const AdminLogin = () => {
 
   return (
     <div>
-      <Navbar />
+      {/* Toast Notifications */}
+      <Toaster
+        position="top-right"
+        reverseOrder={false}
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: "linear-gradient(135deg, #1e293b 0%, #881337 100%)",
+            color: "#fff",
+            border: "2px solid rgba(255, 255, 255, 0.2)",
+            borderRadius: "16px",
+            backdropFilter: "blur(10px)",
+            fontSize: "14px",
+            fontWeight: "bold",
+            padding: "16px",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)",
+          },
+          success: {
+            iconTheme: {
+              primary: "#10b981",
+              secondary: "#fff",
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: "#ef4444",
+              secondary: "#fff",
+            },
+          },
+        }}
+      />
+
+      <NavBar2 showBackButton={false} showAdminButton={true} />
 
       {showLogin && (
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-          <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-            <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
-              🔐 Acceso de Administrador
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-rose-900 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
+          {/* Efectos de fondo animados */}
+          <div className="absolute inset-0 opacity-20">
+            <div className="absolute top-20 left-20 w-72 h-72 bg-rose-500 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-20 right-20 w-96 h-96 bg-pink-500 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          </div>
+
+          <div className="relative bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-2xl shadow-2xl w-full max-w-md">
+            {/* Icono de Admin */}
+            <div className="flex justify-center mb-6">
+              <div className="w-20 h-20 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg">
+                <span className="text-4xl">🔐</span>
+              </div>
+            </div>
+
+            <h2 className="text-3xl font-extrabold text-center text-white mb-2 tracking-tight">
+              Panel Administrativo
             </h2>
-            <form onSubmit={handleAdminLogin} className="space-y-4">
+            <p className="text-center text-rose-200/80 mb-8 text-sm font-medium">
+              Ingresa tus credenciales para continuar
+            </p>
+
+            <form onSubmit={handleAdminLogin} className="space-y-5">
+              {/* Campo de Email */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Contraseña de administrador
+                <label className="flex items-center gap-2 text-sm font-semibold text-white mb-2">
+                  <span className="text-rose-400">📧</span>
+                  Correo Electrónico
                 </label>
                 <input
-                  type="password"
-                  value={adminPassword}
-                  onChange={(e) => setAdminPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Ingrese la contraseña"
+                  type="email"
+                  name="email"
+                  value={loginData.email}
+                  onChange={handleLoginInputChange}
+                  className="w-full px-4 py-3.5 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 text-white placeholder-rose-200/50 transition-all hover:border-white/40"
+                  placeholder="admin@ejemplo.com"
                   required
+                  autoComplete="email"
+                  disabled={loginLoading}
                 />
               </div>
+
+              {/* Campo de Contraseña */}
+              <div>
+                <label className="flex items-center gap-2 text-sm font-semibold text-white mb-2">
+                  <span className="text-rose-400">🔒</span>
+                  Contraseña
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={loginData.password}
+                    onChange={handleLoginInputChange}
+                    className="w-full px-4 py-3.5 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 text-white placeholder-rose-200/50 transition-all hover:border-white/40 pr-12"
+                    placeholder="••••••••"
+                    required
+                    autoComplete="current-password"
+                    disabled={loginLoading}
+                    minLength={6}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/70 hover:text-white transition-colors p-1"
+                    disabled={loginLoading}
+                  >
+                    {showPassword ? (
+                      <span className="text-xl">👁️</span>
+                    ) : (
+                      <span className="text-xl">👁️‍🗨️</span>
+                    )}
+                  </button>
+                </div>
+                <p className="mt-2 text-xs text-rose-200/60">
+                  Mínimo 6 caracteres
+                </p>
+              </div>
+
+              {/* Botón de Login */}
               <button
                 type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md font-medium transition-colors"
+                disabled={loginLoading}
+                className={`w-full py-4 px-4 rounded-xl text-white font-bold text-lg transition-all duration-300 transform shadow-lg ${
+                  loginLoading
+                    ? "bg-gray-500 cursor-not-allowed"
+                    : "bg-gradient-to-r from-rose-600 via-pink-600 to-purple-600 hover:from-rose-700 hover:via-pink-700 hover:to-purple-700 hover:scale-[1.02] hover:shadow-2xl active:scale-[0.98]"
+                }`}
               >
-                Ingresar como Admin
+                {loginLoading ? (
+                  <span className="flex items-center justify-center gap-3">
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Verificando...
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="text-xl">🚀</span>
+                    Iniciar Sesión
+                  </span>
+                )}
               </button>
             </form>
-            <p className="text-sm text-gray-500 text-center mt-4">
-              💡 Contraseña: admin123
-            </p>
+
+            {/* Footer de seguridad */}
+            <div className="mt-6 pt-6 border-t border-white/10">
+              <div className="flex items-center justify-center gap-2 text-xs text-rose-200/70">
+                <span>🔒</span>
+                <span>Conexión segura y encriptada</span>
+              </div>
+            </div>
           </div>
         </div>
       )}
 
       {/* Menú de Administrador */}
       {showAdminMenu && (
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-          <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-            <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
-              👨‍💼 Panel de Administrador
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-rose-900 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
+          {/* Efectos de fondo */}
+          <div className="absolute inset-0 opacity-20">
+            <div className="absolute top-20 left-20 w-72 h-72 bg-rose-500 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-20 right-20 w-96 h-96 bg-pink-500 rounded-full blur-3xl animate-pulse"></div>
+          </div>
+
+          <div className="relative bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-2xl shadow-2xl w-full max-w-lg">
+            {/* Avatar del Admin */}
+            <div className="flex justify-center mb-6">
+              <div className="w-24 h-24 bg-gradient-to-br from-rose-400 to-pink-500 rounded-full flex items-center justify-center shadow-lg ring-4 ring-white/20">
+                <span className="text-5xl">👨‍💼</span>
+              </div>
+            </div>
+
+            <h2 className="text-3xl font-extrabold text-center text-white mb-2">
+              Panel de Control
             </h2>
-            <p className="text-gray-600 text-center mb-8">¿Qué deseas hacer?</p>
+            <p className="text-rose-200 text-center mb-8">
+              Gestiona tu catálogo de productos
+            </p>
 
             <div className="space-y-4">
+              {/* Botón Gestión de Inventario */}
               <button
-                onClick={handleShowCreateForm}
-                className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-md font-medium transition-colors flex items-center justify-center gap-2"
+                onClick={() => navigate("/admin/inventory")}
+                className="w-full group relative overflow-hidden bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl shadow-lg flex items-center justify-center gap-3"
               >
-                <span>➕</span>
-                Crear Nuevo Producto
+                <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                <span className="text-2xl">📦</span>
+                <span className="text-lg">Gestión de Inventario</span>
               </button>
 
+              {/* Botón Cerrar Sesión */}
               <button
                 onClick={handleLogout}
-                className="w-full bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded-md font-medium transition-colors flex items-center justify-center gap-2"
+                className="w-full group relative overflow-hidden bg-white/10 backdrop-blur-sm hover:bg-white/20 border border-white/30 text-white py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl flex items-center justify-center gap-3"
               >
-                <span>🚪</span>
-                Salir y Cerrar Sesión
+                <span className="text-2xl">🚪</span>
+                <span className="text-lg">Cerrar Sesión</span>
               </button>
+            </div>
+
+            {/* Info adicional */}
+            <div className="mt-6 pt-6 border-t border-white/20">
+              <p className="text-center text-rose-200 text-sm">
+                ✨ Sesión de administrador activa
+              </p>
             </div>
           </div>
         </div>
       )}
 
       {isAdmin && showAddForm && (
-        <div className="min-h-screen bg-gray-100 py-8">
-          <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center justify-between mb-6">
-              <button
-                onClick={handleBackToMenu}
-                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors flex items-center gap-2"
-              >
-                <span>←</span>
-                Volver
-              </button>
-              <h2 className="text-2xl font-bold text-gray-800">
-                Crear Nuevo Producto
-              </h2>
-              <div className="w-20"></div>{" "}
-              {/* Espaciado para centrar el título */}
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-rose-900 to-slate-900 py-4 sm:py-8 px-3 sm:px-4 relative overflow-hidden">
+          {/* Efectos de fondo animados */}
+          <div className="absolute inset-0 opacity-20">
+            <div className="absolute top-20 left-20 w-72 h-72 bg-rose-500 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-20 right-20 w-96 h-96 bg-pink-500 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          </div>
+
+          <div className="max-w-3xl mx-auto relative z-10">
+            {/* Header del formulario */}
+            <div className="bg-gradient-to-r from-rose-600 to-pink-600 rounded-t-2xl p-4 sm:p-6 shadow-lg border border-white/10">
+              <div className="flex items-center justify-between gap-2">
+                <button
+                  onClick={handleBackToMenu}
+                  className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg transition-all flex items-center gap-1.5 sm:gap-2 font-semibold border border-white/30 hover:scale-105 transform duration-200 text-sm sm:text-base flex-shrink-0"
+                >
+                  <span className="text-base sm:text-lg">←</span>
+                  <span className="hidden xs:inline">Volver</span>
+                </button>
+                <h2 className="text-lg sm:text-2xl md:text-3xl font-extrabold text-white flex items-center gap-2 sm:gap-3 text-center">
+                  <span className="text-xl sm:text-3xl">✨</span>
+                  <span className="hidden sm:inline">Crear Nuevo Producto</span>
+                  <span className="sm:hidden">Nuevo Producto</span>
+                </h2>
+                <div className="w-12 sm:w-20 md:w-28"></div>
+              </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Nombre del producto */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nombre del producto *
-                </label>
-                <input
-                  type="text"
-                  name="nombre"
-                  value={productData.nombre}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Ej: Collar de perlas elegante"
-                  required
-                />
-              </div>
-
-              {/* Descripción */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Descripción
-                </label>
-                <textarea
-                  name="descripcion"
-                  value={productData.descripcion}
-                  onChange={handleInputChange}
-                  rows="3"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Descripción detallada del producto..."
-                />
-              </div>
-
-              {/* Precio y Stock */}
-              <div className="grid grid-cols-2 gap-4">
+            {/* Formulario */}
+            <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-b-2xl shadow-2xl p-4 sm:p-6 md:p-8">
+              <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+                {/* Nombre del producto */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Precio
+                  <label className="flex items-center gap-2 text-xs sm:text-sm font-bold text-white mb-1.5 sm:mb-2">
+                    <span className="text-rose-400">📦</span>
+                    Nombre del producto *
                   </label>
                   <input
-                    type="number"
-                    name="precio"
-                    value={productData.precio}
+                    type="text"
+                    name="nombre"
+                    value={productData.nombre}
                     onChange={handleInputChange}
-                    step="0.01"
-                    min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="0.00"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all hover:border-rose-400 text-white placeholder-rose-200/50 text-sm sm:text-base"
+                    placeholder="Ej: Collar de perlas elegante"
+                    required
                   />
                 </div>
+
+                {/* Descripción */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Stock
+                  <label className="flex items-center gap-2 text-xs sm:text-sm font-bold text-white mb-1.5 sm:mb-2">
+                    <span className="text-rose-400">📝</span>
+                    Descripción
                   </label>
-                  <input
-                    type="number"
-                    name="stock"
-                    value={productData.stock}
+                  <textarea
+                    name="descripcion"
+                    value={productData.descripcion}
                     onChange={handleInputChange}
-                    min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="0"
+                    rows="3"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all hover:border-rose-400 resize-none text-white placeholder-rose-200/50 text-sm sm:text-base"
+                    placeholder="Descripción detallada del producto..."
                   />
                 </div>
-              </div>
 
-              {/* Categoría y Marca */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Categoría *
-                  </label>
-                  <select
-                    name="categoria_id"
-                    value={productData.categoria_id}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  >
-                    <option value="">Selecciona una categoría</option>
-                    {categorias.map((categoria) => (
-                      <option key={categoria.id} value={categoria.id}>
-                        {categoria.nombre}
-                      </option>
-                    ))}
-                  </select>
+                {/* Precio y Stock */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div>
+                    <label className="flex items-center gap-2 text-xs sm:text-sm font-bold text-white mb-1.5 sm:mb-2">
+                      <span className="text-rose-400">💰</span>
+                      Precio
+                    </label>
+                    <input
+                      type="number"
+                      name="precio"
+                      value={productData.precio}
+                      onChange={handleInputChange}
+                      step="0.01"
+                      min="0"
+                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all hover:border-rose-400 text-white placeholder-rose-200/50 text-sm sm:text-base"
+                      placeholder="0.00"
+                    />
+                  </div>
+                  <div>
+                    <label className="flex items-center gap-2 text-xs sm:text-sm font-bold text-white mb-1.5 sm:mb-2">
+                      <span className="text-rose-400">📊</span>
+                      Stock
+                    </label>
+                    <input
+                      type="number"
+                      name="stock"
+                      value={productData.stock}
+                      onChange={handleInputChange}
+                      min="0"
+                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all hover:border-rose-400 text-white placeholder-rose-200/50 text-sm sm:text-base"
+                      placeholder="0"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Marca *
-                  </label>
-                  <select
-                    name="marca_id"
-                    value={productData.marca_id}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  >
-                    {marcas.map((marca) => (
-                      <option key={marca.id} value={marca.id}>
-                        {marca.nombre}
+
+                {/* Categoría y Marca */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div>
+                    <label className="flex items-center gap-2 text-xs sm:text-sm font-bold text-white mb-1.5 sm:mb-2">
+                      <span className="text-rose-400">🏷️</span>
+                      Categoría *
+                    </label>
+                    <select
+                      name="categoria_id"
+                      value={productData.categoria_id}
+                      onChange={handleInputChange}
+                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all hover:border-rose-400 cursor-pointer text-white text-sm sm:text-base"
+                      required
+                    >
+                      <option value="" className="bg-slate-800">
+                        Selecciona una categoría
                       </option>
-                    ))}
-                  </select>
+                      {categorias.map((categoria) => (
+                        <option
+                          key={categoria.id}
+                          value={categoria.id}
+                          className="bg-slate-800"
+                        >
+                          {categoria.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="flex items-center gap-2 text-xs sm:text-sm font-bold text-white mb-1.5 sm:mb-2">
+                      <span className="text-rose-400">⭐</span>
+                      Marca *
+                    </label>
+                    <select
+                      name="marca_id"
+                      value={productData.marca_id}
+                      onChange={handleInputChange}
+                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all hover:border-rose-400 cursor-pointer text-white text-sm sm:text-base"
+                      required
+                    >
+                      {marcas.map((marca) => (
+                        <option
+                          key={marca.id}
+                          value={marca.id}
+                          className="bg-slate-800"
+                        >
+                          {marca.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-              </div>
 
-              {/* Imágenes */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Imágenes del producto *
-                </label>
-                <input
-                  type="file"
-                  name="images"
-                  multiple
-                  accept="image/*"
-                  onChange={(e) => {
-                    setImages(Array.from(e.target.files));
-                  }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                {images.length > 0 && (
-                  <p className="text-sm text-green-600 mt-1">
-                    📸 {images.length} imagen(es) seleccionada(s)
-                  </p>
-                )}
-              </div>
+                {/* Imágenes */}
+                <div>
+                  <label className="flex items-center justify-between text-xs sm:text-sm font-bold text-white mb-1.5 sm:mb-2">
+                    <span className="flex items-center gap-2">
+                      <span className="text-rose-400">📸</span>
+                      Imágenes del producto *
+                    </span>
+                    <span className="text-rose-300 text-xs font-normal">
+                      Máx. 10 imágenes
+                    </span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      name="images"
+                      multiple
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all hover:border-rose-400 text-white text-xs sm:text-sm file:mr-3 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-3 sm:file:px-4 file:rounded-lg file:border-0 file:bg-gradient-to-r file:from-rose-500 file:to-pink-500 file:text-white file:font-semibold file:cursor-pointer hover:file:from-rose-600 hover:file:to-pink-600 file:text-xs sm:file:text-sm"
+                    />
+                  </div>
+                  {images.length > 0 && (
+                    <div className="mt-3 space-y-2">
+                      <div className="p-2 sm:p-3 bg-green-500/20 backdrop-blur-sm border-l-4 border-green-400 rounded-lg">
+                        <p className="text-xs sm:text-sm text-green-300 font-semibold flex items-center gap-1.5 sm:gap-2">
+                          <span>✅</span>
+                          {images.length} imagen(es) seleccionada(s)
+                        </p>
+                      </div>
+                      {/* Lista de archivos seleccionados */}
+                      <div className="bg-white/5 backdrop-blur-sm border border-white/20 rounded-lg p-2 sm:p-3 max-h-32 overflow-y-auto">
+                        <p className="text-xs text-rose-300 font-semibold mb-2">
+                          Archivos:
+                        </p>
+                        <ul className="space-y-1 text-xs text-white/80">
+                          {images.map((file, index) => (
+                            <li
+                              key={index}
+                              className="flex items-center gap-2 truncate"
+                            >
+                              <span className="text-rose-400">•</span>
+                              <span className="truncate">{file.name}</span>
+                              <span className="text-rose-300/60 text-[10px] flex-shrink-0">
+                                ({(file.size / 1024).toFixed(1)} KB)
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
-              {/* Botón de envío */}
-              <button
-                type="submit"
-                disabled={loading}
-                className={`w-full py-2 px-4 rounded-md text-white font-medium ${
-                  loading
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                }`}
-              >
-                {loading ? "⏳ Creando producto..." : "✨ Crear Producto"}
-              </button>
-            </form>
+                {/* Botón de envío */}
+                <div className="pt-2 sm:pt-4">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className={`w-full py-3 sm:py-4 px-4 sm:px-6 rounded-xl text-white font-bold text-base sm:text-lg transition-all duration-300 transform ${
+                      loading
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 hover:scale-[1.02] hover:shadow-2xl shadow-lg"
+                    }`}
+                  >
+                    {loading ? (
+                      <span className="flex items-center justify-center gap-2 sm:gap-3">
+                        <svg
+                          className="animate-spin h-4 w-4 sm:h-5 sm:w-5"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                            fill="none"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        Creando producto...
+                      </span>
+                    ) : (
+                      <span className="flex items-center justify-center gap-2 sm:gap-3">
+                        <span className="text-xl sm:text-2xl">✨</span>
+                        Crear Producto
+                      </span>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}
