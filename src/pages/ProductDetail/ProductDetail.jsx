@@ -71,12 +71,16 @@ function ProductDetail() {
   };
 
   const getProductImage = (imageIndex) => {
-    if (product?.imagenes && Array.isArray(product.imagenes) && product.imagenes[imageIndex]) {
+    if (
+      product?.imagenes &&
+      Array.isArray(product.imagenes) &&
+      product.imagenes[imageIndex]
+    ) {
       const imageUrl = product.imagenes[imageIndex].image_url;
-      if (imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== '') {
+      if (imageUrl && typeof imageUrl === "string" && imageUrl.trim() !== "") {
         // Forzar HTTPS si la URL es HTTP (problema común en móviles)
-        const secureUrl = imageUrl.startsWith('http://') 
-          ? imageUrl.replace('http://', 'https://') 
+        const secureUrl = imageUrl.startsWith("http://")
+          ? imageUrl.replace("http://", "https://")
           : imageUrl;
         return secureUrl;
       }

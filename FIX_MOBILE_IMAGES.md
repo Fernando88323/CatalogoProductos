@@ -1,20 +1,25 @@
 # 🔧 Solución: Imágenes no aparecen en móviles
 
 ## 📋 Problema
+
 Las imágenes de productos no se mostraban en dispositivos móviles, pero sí funcionaban correctamente en modo escritorio.
 
 ## 🎯 Causas Identificadas
 
 ### 1. **Problema de Mixed Content (HTTP vs HTTPS)**
+
 Los navegadores móviles son más estrictos con el contenido mixto. Si tu sitio está en HTTPS pero las imágenes están en HTTP, los navegadores móviles bloquean la carga.
 
 ### 2. **Lazy Loading Agresivo**
+
 El `IntersectionObserver` con configuración muy estricta (`threshold: 0.1`) no detectaba correctamente las imágenes en móviles debido a comportamientos de scroll diferentes.
 
 ### 3. **Falta de Manejo de Estados de Carga**
+
 No había feedback visual cuando las imágenes estaban cargando o fallaban, causando confusión.
 
 ### 4. **Content Security Policy (CSP)**
+
 Faltaba una política explícita para permitir imágenes desde diferentes orígenes.
 
 ## ✅ Soluciones Implementadas
@@ -22,17 +27,22 @@ Faltaba una política explícita para permitir imágenes desde diferentes oríge
 ### 1. **Forzar HTTPS en URLs de Imágenes**
 
 **Archivos modificados:**
+
 - `src/pages/HomePage/HomePage.jsx`
 - `src/pages/ProductDetail/ProductDetail.jsx`
 
 ```javascript
 const getProductImage = (product) => {
-  if (product.imagenes && Array.isArray(product.imagenes) && product.imagenes.length > 0) {
+  if (
+    product.imagenes &&
+    Array.isArray(product.imagenes) &&
+    product.imagenes.length > 0
+  ) {
     const imageUrl = product.imagenes[0].image_url;
-    if (imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== '') {
+    if (imageUrl && typeof imageUrl === "string" && imageUrl.trim() !== "") {
       // Forzar HTTPS si la URL es HTTP
-      const secureUrl = imageUrl.startsWith('http://') 
-        ? imageUrl.replace('http://', 'https://') 
+      const secureUrl = imageUrl.startsWith("http://")
+        ? imageUrl.replace("http://", "https://")
         : imageUrl;
       return secureUrl;
     }
@@ -81,6 +91,7 @@ const handleImageError = () => {
 ```
 
 **Feedback visual:**
+
 - **Cargando**: Spinner animado
 - **Error**: Mensaje "Sin imagen"
 - **Éxito**: Transición suave de opacidad
@@ -90,23 +101,19 @@ const handleImageError = () => {
 **Archivo modificado:** `index.html`
 
 ```html
-<meta http-equiv="Content-Security-Policy" content="img-src 'self' data: https: http:;">
+<meta
+  http-equiv="Content-Security-Policy"
+  content="img-src 'self' data: https: http:;"
+/>
 ```
 
 ### 5. **Optimizar Carga de Imágenes**
 
 ```html
-<img
-  src={getProductImage(product)}
-  alt={product.nombre}
-  className={`w-full h-full object-contain p-4 ${
-    imageLoaded ? "opacity-100" : "opacity-0"
-  }`}
-  onLoad={handleImageLoad}
-  onError={handleImageError}
-  loading="eager"
-  decoding="async"
-/>
+<img src={getProductImage(product)} alt={product.nombre} className={`w-full
+h-full object-contain p-4 ${ imageLoaded ? "opacity-100" : "opacity-0" }`}
+onLoad={handleImageLoad} onError={handleImageError} loading="eager"
+decoding="async" />
 ```
 
 - `loading="eager"`: Carga inmediata, sin lazy loading
@@ -124,6 +131,7 @@ const handleImageError = () => {
 ## 📱 Cómo Probar
 
 ### En Desarrollo Local:
+
 1. Ejecuta el proyecto: `npm run dev`
 2. Abre DevTools (F12)
 3. Activa el modo responsive (Ctrl + Shift + M)
@@ -132,7 +140,9 @@ const handleImageError = () => {
 6. Verifica que las imágenes carguen correctamente
 
 ### En Producción (Vercel):
+
 1. Haz push de los cambios:
+
 ```bash
 git add .
 git commit -m "Fix: Imágenes no aparecían en móviles"
@@ -151,16 +161,21 @@ git push origin main
 Si las imágenes aún no cargan en móvil:
 
 ### 1. Verifica las URLs en la consola
+
 Abre DevTools en tu móvil (puedes usar Chrome Remote Debugging) y verifica:
 
 ```javascript
 // Esto imprimirá las URLs de imágenes en desarrollo
 if (import.meta.env.DEV) {
-  console.log(`Producto sin imagen válida: ${product.nombre}`, product.imagenes);
+  console.log(
+    `Producto sin imagen válida: ${product.nombre}`,
+    product.imagenes
+  );
 }
 ```
 
 ### 2. Verifica el Backend
+
 Asegúrate de que tu backend esté devolviendo las URLs de imágenes correctamente:
 
 ```bash
@@ -168,12 +183,15 @@ curl https://tu-backend.railway.app/upload/productos
 ```
 
 ### 3. Verifica CORS
+
 Si las imágenes están en un dominio diferente, verifica que CORS esté configurado correctamente en tu backend.
 
 Ver: `CONFIGURAR_CORS_RAILWAY.md`
 
 ### 4. Verifica las URLs de las Imágenes
+
 Las URLs deben ser:
+
 - **✅ HTTPS** (no HTTP)
 - **✅ Accesibles** públicamente
 - **✅ Con CORS** habilitado (si están en dominio externo)
@@ -181,12 +199,14 @@ Las URLs deben ser:
 ## 📊 Mejoras de Rendimiento
 
 ### Antes:
+
 - ❌ Sin feedback de carga
 - ❌ HTTP bloqueado en móviles
 - ❌ Lazy loading muy agresivo
 - ❌ Sin manejo de errores
 
 ### Después:
+
 - ✅ Spinner durante carga
 - ✅ HTTPS forzado automáticamente
 - ✅ Lazy loading optimizado para móviles
@@ -197,6 +217,7 @@ Las URLs deben ser:
 ## 🚀 Despliegue
 
 1. **Commitear cambios:**
+
 ```bash
 git add .
 git commit -m "Fix: Imágenes no aparecían en móviles - forzar HTTPS, optimizar lazy loading, agregar estados de carga"
@@ -233,6 +254,7 @@ git push origin main
 ## 🎯 Resultado Esperado
 
 Después de estos cambios:
+
 - ✅ Las imágenes se cargan correctamente en móviles
 - ✅ Feedback visual durante la carga
 - ✅ Mejor rendimiento con lazy loading optimizado
@@ -242,6 +264,7 @@ Después de estos cambios:
 ---
 
 **Si el problema persiste después de estos cambios, verifica:**
+
 1. Las URLs en la base de datos
 2. La configuración de CORS en el backend
 3. Los logs del navegador en el dispositivo móvil

@@ -57,13 +57,13 @@ const ProductCard = ({ product, index, getProductImage, getProductRating }) => {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
           </div>
         )}
-        
+
         {imageError && (
           <div className="absolute inset-0 flex items-center justify-center text-gray-400">
             <span className="text-xs">Sin imagen</span>
           </div>
         )}
-        
+
         <img
           src={getProductImage(product)}
           alt={product.nombre}

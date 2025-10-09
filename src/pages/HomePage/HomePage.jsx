@@ -110,22 +110,29 @@ const HomePage = () => {
   // Obtener imagen del producto o placeholder
   const getProductImage = (product) => {
     // Verificar si hay imágenes disponibles
-    if (product.imagenes && Array.isArray(product.imagenes) && product.imagenes.length > 0) {
+    if (
+      product.imagenes &&
+      Array.isArray(product.imagenes) &&
+      product.imagenes.length > 0
+    ) {
       const imageUrl = product.imagenes[0].image_url;
-      if (imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== '') {
+      if (imageUrl && typeof imageUrl === "string" && imageUrl.trim() !== "") {
         // Forzar HTTPS si la URL es HTTP (problema común en móviles)
-        const secureUrl = imageUrl.startsWith('http://') 
-          ? imageUrl.replace('http://', 'https://') 
+        const secureUrl = imageUrl.startsWith("http://")
+          ? imageUrl.replace("http://", "https://")
           : imageUrl;
         return secureUrl;
       }
     }
-    
+
     // Debug en desarrollo
     if (import.meta.env.DEV) {
-      console.log(`Producto sin imagen válida: ${product.nombre}`, product.imagenes);
+      console.log(
+        `Producto sin imagen válida: ${product.nombre}`,
+        product.imagenes
+      );
     }
-    
+
     // Fallback a placeholder
     return "https://via.placeholder.com/400x400?text=Sin+Imagen";
   };
