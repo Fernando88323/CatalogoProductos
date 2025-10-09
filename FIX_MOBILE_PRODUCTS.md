@@ -12,6 +12,7 @@
 ### **IntersectionObserver con Opacidad Inicial en 0**
 
 El problema era que tanto las **secciones** (HomePage) como las **tarjetas** (ProductCard) usaban:
+
 ```jsx
 className={`... ${
   isVisible ? "opacity-100" : "opacity-0"  // ⚠️ Empieza invisible!
@@ -19,6 +20,7 @@ className={`... ${
 ```
 
 Y `isVisible` empezaba en `false`, causando que:
+
 - Las tarjetas estuvieran **completamente ocultas** hasta que el `IntersectionObserver` las detectara
 - En móviles, el observer no se activaba correctamente
 - Cambiar de categoría forzaba un re-render, haciendo visible el contenido
@@ -30,21 +32,22 @@ Y `isVisible` empezaba en `false`, causando que:
 Agregamos detección de móviles para hacer el contenido visible inmediatamente:
 
 ```javascript
-const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 ```
 
 ### **2. ProductCard.jsx - Visibilidad Inmediata en Móvil**
 
 **ANTES:**
+
 ```jsx
 const ProductCard = ({ product, index, getProductImage, getProductRating }) => {
   const [isVisible, setIsVisible] = useState(false); // ❌ Siempre empieza oculto
-  
+
   useEffect(() => {
     // Observer para TODOS los dispositivos
     const observer = new IntersectionObserver(...);
   }, []);
-  
+
   return (
     <div className={`... ${isVisible ? "opacity-100" : "opacity-0"}`}>
       {/* Contenido oculto hasta que observer detecta */}
@@ -54,18 +57,19 @@ const ProductCard = ({ product, index, getProductImage, getProductRating }) => {
 ```
 
 **DESPUÉS:**
+
 ```jsx
 const ProductCard = ({ product, index, getProductImage, getProductRating }) => {
   // ✅ Detectar móvil
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-  
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+
   // ✅ Visible inmediatamente en móvil, lazy en desktop
   const [isVisible, setIsVisible] = useState(isMobile);
-  
+
   useEffect(() => {
     // ✅ Si ya es visible (móvil), NO usar observer
     if (isVisible) return;
-    
+
     // Solo en desktop: usar IntersectionObserver
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -79,14 +83,14 @@ const ProductCard = ({ product, index, getProductImage, getProductRating }) => {
         rootMargin: "100px 0px 100px 0px", // Pre-carga más amplia
       }
     );
-    
+
     if (cardRef.current) {
       observer.observe(cardRef.current);
     }
-    
+
     return () => observer.disconnect();
   }, [isVisible]); // ✅ Dependencia añadida
-  
+
   return (
     <div className={`... ${isVisible ? "opacity-100" : "opacity-0"}`}>
       {/* ✅ Visible de inmediato en móvil */}
@@ -98,10 +102,11 @@ const ProductCard = ({ product, index, getProductImage, getProductRating }) => {
 ### **3. HomePage.jsx - Secciones Visibles Inmediatamente en Móvil**
 
 **ANTES:**
+
 ```jsx
 const HomePage = () => {
   const [visibleSections, setVisibleSections] = useState({}); // ❌ Todo oculto
-  
+
   useEffect(() => {
     // Observer para TODAS las secciones
     const observer = new IntersectionObserver(...);
@@ -109,7 +114,7 @@ const HomePage = () => {
     if (filtersRef.current) observer.observe(filtersRef.current);
     if (productsRef.current) observer.observe(productsRef.current);
   }, []);
-  
+
   return (
     <div>
       <section className={visibleSections['hero-section'] ? "opacity-100" : "opacity-0"}>
@@ -124,11 +129,12 @@ const HomePage = () => {
 ```
 
 **DESPUÉS:**
+
 ```jsx
 const HomePage = () => {
   // ✅ Detectar móvil
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-  
+
   // ✅ En móvil, TODO visible de inmediato
   const [visibleSections, setVisibleSections] = useState(
     isMobile ? {
@@ -137,20 +143,20 @@ const HomePage = () => {
       'products-section': true,
     } : {} // Desktop: empieza oculto para animaciones
   );
-  
+
   useEffect(() => {
     // ✅ Si es móvil, NO usar observer
     if (isMobile) return;
-    
+
     // Solo en desktop: observer para animaciones
     const observer = new IntersectionObserver(...);
     if (heroRef.current) observer.observe(heroRef.current);
     if (filtersRef.current) observer.observe(filtersRef.current);
     if (productsRef.current) observer.observe(productsRef.current);
-    
+
     return () => observer.disconnect();
   }, [isMobile]); // ✅ Dependencia añadida
-  
+
   return (
     <div>
       <section className={visibleSections['hero-section'] ? "opacity-100" : "opacity-0"}>
@@ -167,6 +173,7 @@ const HomePage = () => {
 ## 📊 Comparación: Antes vs Después
 
 ### **Antes (❌ Problema):**
+
 ```
 📱 MÓVIL:
 1. Usuario abre la página
@@ -180,6 +187,7 @@ Resultado: Mala experiencia de usuario
 ```
 
 ### **Después (✅ Solución):**
+
 ```
 📱 MÓVIL:
 1. Usuario abre la página
@@ -202,6 +210,7 @@ Resultado: Animaciones elegantes conservadas
 ## 🚀 Resultado Final
 
 ### **En Móviles (< 768px):**
+
 - ✅ **Productos visibles de INMEDIATO** al cargar
 - ✅ **No necesitas cambiar categoría** para ver productos
 - ✅ **Hero, filtros y productos** aparecen sin retraso
@@ -210,6 +219,7 @@ Resultado: Animaciones elegantes conservadas
 - ✅ **Manejo de errores** con mensaje "Sin imagen"
 
 ### **En Desktop (≥ 768px):**
+
 - ✅ **Lazy loading conservado** para rendimiento
 - ✅ **Animaciones smooth** al hacer scroll
 - ✅ **IntersectionObserver optimizado** (threshold: 0.01, rootMargin: 100px)
@@ -218,6 +228,7 @@ Resultado: Animaciones elegantes conservadas
 ## 📱 Cómo Probar
 
 ### **Método 1: DevTools**
+
 1. Abre el proyecto: `npm run dev`
 2. Presiona `F12` para abrir DevTools
 3. Presiona `Ctrl + Shift + M` para modo responsive
@@ -226,6 +237,7 @@ Resultado: Animaciones elegantes conservadas
 6. ✅ **Los productos deben aparecer INMEDIATAMENTE**
 
 ### **Método 2: Teléfono Real**
+
 1. Despliega a producción:
    ```bash
    git add .
@@ -240,6 +252,7 @@ Resultado: Animaciones elegantes conservadas
 ## 🛠️ Archivos Modificados
 
 ### **1. `src/components/ProductCard/ProductCard.jsx`**
+
 ```diff
 - const [isVisible, setIsVisible] = useState(false);
 + const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
@@ -253,6 +266,7 @@ Resultado: Animaciones elegantes conservadas
 ```
 
 ### **2. `src/pages/HomePage/HomePage.jsx`**
+
 ```diff
 - const [visibleSections, setVisibleSections] = useState({});
 + const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
@@ -274,21 +288,27 @@ Resultado: Animaciones elegantes conservadas
 ## 🐛 Si Aún No Funciona
 
 ### **1. Verifica el ancho de pantalla**
+
 Abre la consola del navegador y ejecuta:
+
 ```javascript
-console.log('Es móvil?', window.innerWidth < 768);
-console.log('Ancho:', window.innerWidth);
+console.log("Es móvil?", window.innerWidth < 768);
+console.log("Ancho:", window.innerWidth);
 ```
 
 ### **2. Verifica que no haya errores de consola**
+
 Abre DevTools → Console y busca errores.
 
 ### **3. Hard Reload**
+
 En el navegador móvil:
+
 - Chrome Android: Menú → Configuración → Borrar datos de navegación
 - Safari iOS: Configuración → Safari → Borrar historial
 
 ### **4. Verifica las imágenes del backend**
+
 ```bash
 curl https://tu-backend.railway.app/upload/productos | jq
 ```

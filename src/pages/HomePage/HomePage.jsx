@@ -22,15 +22,17 @@ import {
 const HomePage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
-  
+
   // En móviles, hacer todo visible de inmediato
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
   const [visibleSections, setVisibleSections] = useState(
-    isMobile ? {
-      'hero-section': true,
-      'filters-section': true,
-      'products-section': true,
-    } : {}
+    isMobile
+      ? {
+          "hero-section": true,
+          "filters-section": true,
+          "products-section": true,
+        }
+      : {}
   );
 
   const heroRef = useRef(null);

@@ -4,7 +4,7 @@ import { FaStar } from "react-icons/fa";
 
 const ProductCard = ({ product, index, getProductImage, getProductRating }) => {
   // En móviles, hacer visibles las tarjetas de inmediato
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
   const [isVisible, setIsVisible] = useState(isMobile); // Visible inmediatamente en móvil
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
