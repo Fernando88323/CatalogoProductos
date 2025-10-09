@@ -1,0 +1,83 @@
+# 📋 VARIABLES DE ENTORNO PARA VERCEL
+# Copia cada línea en Vercel Dashboard → Settings → Environment Variables
+
+===========================================
+Variable 1:
+Name: VITE_API_BASE_URL
+Value: https://catalogoproductosbackend-production-fcd1.up.railway.app
+
+===========================================
+Variable 2:
+Name: VITE_API_UPLOAD_UPLOAD
+Value: https://catalogoproductosbackend-production-fcd1.up.railway.app/upload/upload
+
+===========================================
+Variable 3:
+Name: VITE_API_PRODUCTOS
+Value: https://catalogoproductosbackend-production-fcd1.up.railway.app/upload/productos
+
+===========================================
+Variable 4:
+Name: VITE_API_PRODUCTOS_ALL
+Value: https://catalogoproductosbackend-production-fcd1.up.railway.app/upload/productos/all
+
+===========================================
+Variable 5:
+Name: VITE_API_PRODUCTOS_INACTIVOS
+Value: https://catalogoproductosbackend-production-fcd1.up.railway.app/upload/productos/inactivos
+
+===========================================
+Variable 6:
+Name: VITE_API_PRODUCTOS_DETAIL
+Value: https://catalogoproductosbackend-production-fcd1.up.railway.app/upload/productos
+
+===========================================
+Variable 7:
+Name: VITE_API_PRODUCTOS_IMAGENES
+Value: https://catalogoproductosbackend-production-fcd1.up.railway.app/upload/productos
+
+===========================================
+Variable 8:
+Name: VITE_API_PRODUCTOS_REACTIVAR
+Value: https://catalogoproductosbackend-production-fcd1.up.railway.app/upload/productos
+
+===========================================
+Variable 9:
+Name: VITE_API_PRODUCTOS_PERMANENTE
+Value: https://catalogoproductosbackend-production-fcd1.up.railway.app/upload/productos
+
+===========================================
+Variable 10:
+Name: VITE_API_AUTH_LOGIN
+Value: https://catalogoproductosbackend-production-fcd1.up.railway.app/auth/login
+
+===========================================
+Variable 11:
+Name: VITE_API_AUTH_LOGOUT
+Value: https://catalogoproductosbackend-production-fcd1.up.railway.app/auth/logout
+
+===========================================
+Variable 12:
+Name: VITE_API_AUTH_VERIFY
+Value: https://catalogoproductosbackend-production-fcd1.up.railway.app/auth/verify
+
+===========================================
+
+📌 INSTRUCCIONES PARA VERCEL:
+
+1. Ve a: https://vercel.com/dashboard
+2. Selecciona tu proyecto
+3. Click en "Settings"
+4. Click en "Environment Variables"
+5. Para cada variable de arriba:
+   - Click en "Add New"
+   - Copia el "Name"
+   - Copia el "Value"
+   - Selecciona: Production, Preview, Development (todos)
+   - Click en "Save"
+6. Una vez agregadas todas, ve a "Deployments"
+7. Click en los 3 puntos del último deployment
+8. Click en "Redeploy"
+
+⚠️ IMPORTANTE: No olvides configurar CORS en tu backend de Railway
+para permitir peticiones desde tu dominio de Vercel.
