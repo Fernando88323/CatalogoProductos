@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar2 from "../../components/NavBar/NavBar";
 import toast, { Toaster } from "react-hot-toast";
+import API_CONFIG from "../../config/api";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -9,9 +10,14 @@ const AdminLogin = () => {
   const [loading, setLoading] = useState(false);
   const [showLogin, setShowLogin] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [adminPassword, setAdminPassword] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showAdminMenu, setShowAdminMenu] = useState(false);
+  const [loginData, setLoginData] = useState({
+    email: "",
+    password: "",
+  });
+  const [showPassword, setShowPassword] = useState(false);
   const [productData, setProductData] = useState({
     nombre: "",
     descripcion: "",
@@ -109,8 +115,9 @@ const AdminLogin = () => {
         formData.append("images", file);
       });
 
-      const response = await fetch("http://localhost:4000/upload/upload", {
+      const response = await fetch(API_CONFIG.PRODUCTOS.CREATE, {
         method: "POST",
+        credentials: "include", // Incluir cookies en la petición
         body: formData,
       });
 
@@ -155,43 +162,161 @@ const AdminLogin = () => {
 
   // Verificar si ya está autenticado como admin
   useEffect(() => {
-    const adminStatus = localStorage.getItem("isAdmin");
-    if (adminStatus === "true") {
-      setIsAdmin(true);
-      setShowLogin(false);
-      setShowAdminMenu(true);
-    }
+    // Verificar si existe una sesión activa en el backend (cookie HTTP-only)
+    const checkSession = async () => {
+      try {
+        const response = await fetch(API_CONFIG.AUTH.VERIFY, {
+          method: "GET",
+          credentials: "include", // Incluir cookies en la petición
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          // El usuario tiene una sesión válida
+          setIsAdmin(true);
+          setShowLogin(false);
+          setShowAdminMenu(true);
+        }
+      } catch (error) {
+        console.error("Error al verificar sesión:", error);
+        // Si hay error, simplemente mantener el login visible
+      }
+    };
+
+    checkSession();
   }, []);
 
-  // Simple autenticación de admin (sin roles complejos)
-  const handleAdminLogin = (e) => {
-    e.preventDefault();
-    // Contraseña simple para el admin (en un entorno real usar algo más seguro)
-    if (adminPassword === "admin123") {
-      setIsAdmin(true);
-      setShowLogin(false);
-      setShowAdminMenu(true);
-      localStorage.setItem("isAdmin", "true");
-      toast.success("Acceso de administrador concedido", {
-        icon: "🔐",
-        duration: 3000,
-      });
-    } else {
-      toast.error("Contraseña incorrecta", {
-        icon: "❌",
-      });
-    }
-    setAdminPassword("");
+  // Validación de email
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
   };
 
-  const handleLogout = () => {
+  // Manejo de cambios en el formulario de login
+  const handleLoginInputChange = (e) => {
+    const { name, value } = e.target;
+    setLoginData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  // Simple autenticación de admin (sin roles complejos)
+  const handleAdminLogin = async (e) => {
+    e.preventDefault();
+
+    // Validaciones del cliente
+    if (!loginData.email.trim()) {
+      toast.error("Por favor ingresa tu email", {
+        icon: "📧",
+      });
+      return;
+    }
+
+    if (!validateEmail(loginData.email)) {
+      toast.error("Por favor ingresa un email válido", {
+        icon: "⚠️",
+      });
+      return;
+    }
+
+    if (!loginData.password) {
+      toast.error("Por favor ingresa tu contraseña", {
+        icon: "🔒",
+      });
+      return;
+    }
+
+    if (loginData.password.length < 6) {
+      toast.error("La contraseña debe tener al menos 6 caracteres", {
+        icon: "⚠️",
+      });
+      return;
+    }
+
+    setLoginLoading(true);
+
+    try {
+      const response = await fetch(API_CONFIG.AUTH.LOGIN, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // Incluir cookies en la petición
+        body: JSON.stringify({
+          email: loginData.email.trim(),
+          password: loginData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      // Log para debugging
+      console.log("Response status:", response.status);
+      console.log("Response data:", data);
+
+      // Verificar si el login fue exitoso
+      if (data.success === true || response.ok) {
+        // El backend maneja las cookies HTTP-only automáticamente
+        // No necesitamos guardar nada en localStorage
+
+        // Actualizar estados para mostrar el panel
+        setIsAdmin(true);
+        setShowLogin(false);
+        setShowAdminMenu(true);
+
+        const adminName =
+          data.user && data.user.nombre ? data.user.nombre : "Administrador";
+        toast.success(`¡Bienvenido, ${adminName}!`, {
+          icon: "🎉",
+          duration: 3000,
+        });
+
+        // Limpiar formulario
+        setLoginData({ email: "", password: "" });
+      } else {
+        // Manejar diferentes errores del servidor
+        const errorMessage =
+          data.message || data.error || "Credenciales incorrectas";
+        console.error("Error de login:", errorMessage);
+        toast.error(errorMessage, {
+          icon: "❌",
+          duration: 4000,
+        });
+      }
+    } catch (error) {
+      console.error("Error en la autenticación:", error);
+      toast.error("Error de conexión con el servidor", {
+        icon: "🔌",
+        duration: 4000,
+      });
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      // Llamar al endpoint de logout en el backend para limpiar la cookie
+      await fetch(API_CONFIG.AUTH.LOGOUT, {
+        method: "POST",
+        credentials: "include", // Incluir cookies en la petición
+      });
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+    }
+
+    // Actualizar estados locales
     setIsAdmin(false);
     setShowLogin(true);
     setShowAddForm(false);
     setShowAdminMenu(false);
-    localStorage.removeItem("isAdmin");
-    toast.success("Sesión de administrador cerrada", {
-      icon: "🚪",
+    setLoginData({ email: "", password: "" });
+
+    toast.success("Sesión cerrada correctamente", {
+      icon: "👋",
+      duration: 3000,
     });
   };
 
@@ -259,39 +384,115 @@ const AdminLogin = () => {
               </div>
             </div>
 
-            <h2 className="text-3xl font-extrabold text-center text-white mb-2">
-              Panel de Administración
+            <h2 className="text-3xl font-extrabold text-center text-white mb-2 tracking-tight">
+              Panel Administrativo
             </h2>
-            <p className="text-center text-rose-200 mb-8 text-sm">
-              Acceso exclusivo para administradores
+            <p className="text-center text-rose-200/80 mb-8 text-sm font-medium">
+              Ingresa tus credenciales para continuar
             </p>
 
             <form onSubmit={handleAdminLogin} className="space-y-5">
+              {/* Campo de Email */}
               <div>
-                <label className="block text-sm font-semibold text-white mb-2">
-                  Contraseña de administrador
+                <label className="flex items-center gap-2 text-sm font-semibold text-white mb-2">
+                  <span className="text-rose-400">📧</span>
+                  Correo Electrónico
                 </label>
                 <input
-                  type="password"
-                  value={adminPassword}
-                  onChange={(e) => setAdminPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent text-white placeholder-rose-200/50 transition-all"
-                  placeholder="Ingrese la contraseña"
+                  type="email"
+                  name="email"
+                  value={loginData.email}
+                  onChange={handleLoginInputChange}
+                  className="w-full px-4 py-3.5 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 text-white placeholder-rose-200/50 transition-all hover:border-white/40"
+                  placeholder="admin@ejemplo.com"
                   required
+                  autoComplete="email"
+                  disabled={loginLoading}
                 />
               </div>
+
+              {/* Campo de Contraseña */}
+              <div>
+                <label className="flex items-center gap-2 text-sm font-semibold text-white mb-2">
+                  <span className="text-rose-400">🔒</span>
+                  Contraseña
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={loginData.password}
+                    onChange={handleLoginInputChange}
+                    className="w-full px-4 py-3.5 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 text-white placeholder-rose-200/50 transition-all hover:border-white/40 pr-12"
+                    placeholder="••••••••"
+                    required
+                    autoComplete="current-password"
+                    disabled={loginLoading}
+                    minLength={6}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/70 hover:text-white transition-colors p-1"
+                    disabled={loginLoading}
+                  >
+                    {showPassword ? (
+                      <span className="text-xl">👁️</span>
+                    ) : (
+                      <span className="text-xl">👁️‍🗨️</span>
+                    )}
+                  </button>
+                </div>
+                <p className="mt-2 text-xs text-rose-200/60">
+                  Mínimo 6 caracteres
+                </p>
+              </div>
+
+              {/* Botón de Login */}
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white py-3 px-4 rounded-lg font-semibold transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl shadow-lg"
+                disabled={loginLoading}
+                className={`w-full py-4 px-4 rounded-xl text-white font-bold text-lg transition-all duration-300 transform shadow-lg ${
+                  loginLoading
+                    ? "bg-gray-500 cursor-not-allowed"
+                    : "bg-gradient-to-r from-rose-600 via-pink-600 to-purple-600 hover:from-rose-700 hover:via-pink-700 hover:to-purple-700 hover:scale-[1.02] hover:shadow-2xl active:scale-[0.98]"
+                }`}
               >
-                🚀 Ingresar al Panel
+                {loginLoading ? (
+                  <span className="flex items-center justify-center gap-3">
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Verificando...
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="text-xl">🚀</span>
+                    Iniciar Sesión
+                  </span>
+                )}
               </button>
             </form>
-            <div className="mt-6 p-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg">
-              <p className="text-xs text-rose-200 text-center">
-                💡 <span className="font-semibold">Contraseña de prueba:</span>{" "}
-                admin123
-              </p>
+
+            {/* Footer de seguridad */}
+            <div className="mt-6 pt-6 border-t border-white/10">
+              <div className="flex items-center justify-center gap-2 text-xs text-rose-200/70">
+                <span>🔒</span>
+                <span>Conexión segura y encriptada</span>
+              </div>
             </div>
           </div>
         </div>

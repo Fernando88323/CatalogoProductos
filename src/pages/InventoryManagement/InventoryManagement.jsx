@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import NavBar2 from "../../components/NavBar/NavBar";
 import ProductImage from "../../components/ProductImage";
 import toast, { Toaster } from "react-hot-toast";
+import API_CONFIG from "../../config/api";
 import {
   FaEdit,
   FaTrash,
@@ -15,8 +17,11 @@ import {
 } from "react-icons/fa";
 
 const InventoryManagement = () => {
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [filterStatus, setFilterStatus] = useState("activos"); // 'activos', 'inactivos', 'todos'
@@ -25,6 +30,7 @@ const InventoryManagement = () => {
   const [showPermanentDeleteModal, setShowPermanentDeleteModal] =
     useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showReactivateModal, setShowReactivateModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [editFormData, setEditFormData] = useState({
     nombre: "",
@@ -110,21 +116,59 @@ const InventoryManagement = () => {
 
   const marcas = [{ id: 1, nombre: "Genérica" }];
 
+  // Verificar autenticación al montar el componente
+  useEffect(() => {
+    const verifyAuth = async () => {
+      try {
+        const response = await fetch(API_CONFIG.AUTH.VERIFY, {
+          method: "GET",
+          credentials: "include", // Incluir cookies en la petición
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          setIsAuthenticated(true);
+        } else {
+          // Si no está autenticado, redirigir al login
+          toast.error("Debes iniciar sesión para acceder a esta página", {
+            icon: "🔒",
+            duration: 3000,
+          });
+          navigate("/admin/login");
+        }
+      } catch (error) {
+        console.error("Error al verificar autenticación:", error);
+        toast.error("Error de conexión. Redirigiendo al login...", {
+          icon: "❌",
+          duration: 3000,
+        });
+        navigate("/admin/login");
+      } finally {
+        setCheckingAuth(false);
+      }
+    };
+
+    verifyAuth();
+  }, [navigate]);
+
   // Cargar productos al montar el componente y cuando cambie el filtro de estado
   useEffect(() => {
-    fetchProducts();
-  }, [filterStatus]);
+    if (isAuthenticated) {
+      fetchProducts();
+    }
+  }, [filterStatus, isAuthenticated]);
 
   const fetchProducts = async () => {
     setLoading(true);
     try {
       // Seleccionar el endpoint según el filtro de estado
-      let endpoint = "http://localhost:4000/upload/productos"; // Solo activos
+      let endpoint = API_CONFIG.PRODUCTOS.LIST; // Solo activos
 
       if (filterStatus === "todos") {
-        endpoint = "http://localhost:4000/upload/productos/all";
+        endpoint = API_CONFIG.PRODUCTOS.ALL;
       } else if (filterStatus === "inactivos") {
-        endpoint = "http://localhost:4000/upload/productos/inactivos";
+        endpoint = API_CONFIG.PRODUCTOS.INACTIVOS;
       }
 
       const response = await fetch(endpoint);
@@ -176,23 +220,6 @@ const InventoryManagement = () => {
     setShowEditModal(true);
   };
 
-  // Abrir modal de eliminación
-  const handleDeleteClick = (product) => {
-    showConfirmToast(
-      `¿Deseas desactivar el producto "${product.nombre}"?`,
-      () => {
-        setSelectedProduct(product);
-        setShowDeleteModal(true);
-      },
-      {
-        confirmText: "Desactivar",
-        cancelText: "Cancelar",
-        icon: "🚫",
-        confirmIcon: "🚫",
-      }
-    );
-  };
-
   // Actualizar producto
   const handleUpdateProduct = async (e) => {
     e.preventDefault();
@@ -222,7 +249,7 @@ const InventoryManagement = () => {
 
       // Endpoint correcto según el backend: PUT /upload/productos/:id
       const response = await fetch(
-        `http://localhost:4000/upload/productos/${selectedProduct.id}`,
+        API_CONFIG.PRODUCTOS.UPDATE(selectedProduct.id),
         {
           method: "PUT",
           body: formData,
@@ -262,7 +289,7 @@ const InventoryManagement = () => {
 
       // Endpoint correcto según el backend: DELETE /upload/productos/:id (soft delete)
       const response = await fetch(
-        `http://localhost:4000/upload/productos/${selectedProduct.id}`,
+        API_CONFIG.PRODUCTOS.DELETE(selectedProduct.id),
         {
           method: "DELETE",
         }
@@ -294,121 +321,80 @@ const InventoryManagement = () => {
 
   // Eliminar producto permanentemente (hard delete)
   const handlePermanentDeleteProduct = async () => {
-    // Confirmación adicional con toast
-    showConfirmToast(
-      `⚠️ ADVERTENCIA: Esta acción eliminará PERMANENTEMENTE "${selectedProduct.nombre}" y todas sus imágenes. ¿Estás completamente seguro?`,
-      async () => {
-        setLoading(true);
-        try {
-          // Endpoint para eliminación permanente: DELETE /upload/productos/:id/permanente
-          const response = await fetch(
-            `http://localhost:4000/upload/productos/${selectedProduct.id}/permanente`,
-            {
-              method: "DELETE",
-            }
-          );
-
-          const data = await response.json();
-
-          if (data.success) {
-            toast.success(
-              data.message || "Producto eliminado permanentemente",
-              {
-                icon: "💥",
-                duration: 4000,
-              }
-            );
-            setShowPermanentDeleteModal(false);
-            fetchProducts();
-          } else {
-            toast.error(data.message || "Error al eliminar permanentemente", {
-              icon: "❌",
-            });
-          }
-        } catch (error) {
-          console.error("Error al eliminar producto permanentemente:", error);
-          toast.error(
-            "Error de conexión al eliminar el producto permanentemente",
-            {
-              icon: "❌",
-            }
-          );
-        } finally {
-          setLoading(false);
+    setLoading(true);
+    try {
+      const response = await fetch(
+        API_CONFIG.PRODUCTOS.DELETE_PERMANENT(selectedProduct.id),
+        {
+          method: "DELETE",
         }
-      },
-      {
-        confirmText: "SÍ, ELIMINAR PERMANENTEMENTE",
-        cancelText: "No, cancelar",
-        icon: "💥",
-        confirmIcon: "⚠️",
-        cancelIcon: "🛡️",
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success(data.message || "Producto eliminado permanentemente", {
+          icon: "💥",
+          duration: 4000,
+        });
+        setShowPermanentDeleteModal(false);
+        fetchProducts();
+      } else {
+        toast.error(data.message || "Error al eliminar permanentemente", {
+          icon: "❌",
+        });
       }
-    );
+    } catch (error) {
+      console.error("Error al eliminar producto permanentemente:", error);
+      toast.error("Error de conexión al eliminar el producto permanentemente", {
+        icon: "❌",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Reactivar producto
   const handleReactivateProduct = async (product) => {
-    console.log("🔍 Reactivando producto:", product);
+    setSelectedProduct(product);
+    setShowReactivateModal(true);
+  };
 
-    // Mostrar confirmación con toast
-    showConfirmToast(
-      `¿Deseas reactivar el producto "${product.nombre}"?`,
-      async () => {
-        // Usar toast.promise para mostrar el progreso
-        const reactivatePromise = fetch(
-          `http://localhost:4000/upload/productos/${product.id}/reactivar`,
-          {
-            method: "PATCH",
-          }
-        ).then(async (response) => {
-          const data = await response.json();
-          console.log("📥 Respuesta del servidor (reactivar):", data);
+  // Confirmar reactivación
+  const confirmReactivateProduct = async () => {
+    setLoading(true);
+    try {
+      console.log("🔍 Reactivando producto:", selectedProduct);
 
-          if (!data.success) {
-            throw new Error(data.message || "Error al reactivar");
-          }
-
-          fetchProducts();
-          return data.message || "Producto reactivado exitosamente";
-        });
-
-        toast.promise(
-          reactivatePromise,
-          {
-            loading: `Reactivando "${product.nombre}"...`,
-            success: (message) => message,
-            error: (err) =>
-              err.message || "Error de conexión al reactivar el producto",
-          },
-          {
-            success: {
-              icon: "♻️",
-              duration: 3000,
-            },
-            error: {
-              icon: "❌",
-            },
-            loading: {
-              icon: "⏳",
-            },
-          }
-        );
-
-        try {
-          await reactivatePromise;
-        } catch (error) {
-          console.error("Error al reactivar producto:", error);
+      const response = await fetch(
+        API_CONFIG.PRODUCTOS.REACTIVATE(selectedProduct.id),
+        {
+          method: "PATCH",
         }
-      },
-      {
-        confirmText: "Reactivar",
-        cancelText: "Cancelar",
-        icon: "♻️",
-        confirmIcon: "✅",
-        cancelIcon: "❌",
+      );
+
+      const data = await response.json();
+      console.log("📥 Respuesta del servidor (reactivar):", data);
+
+      if (data.success) {
+        toast.success(data.message || "Producto reactivado exitosamente", {
+          icon: "♻️",
+        });
+        setShowReactivateModal(false);
+        fetchProducts();
+      } else {
+        toast.error(data.message || "Error al reactivar", {
+          icon: "❌",
+        });
       }
-    );
+    } catch (error) {
+      console.error("Error al reactivar producto:", error);
+      toast.error("Error de conexión al reactivar el producto", {
+        icon: "❌",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEditInputChange = (e) => {
@@ -497,7 +483,7 @@ const InventoryManagement = () => {
         formData.append("images", file);
       });
 
-      const response = await fetch("http://localhost:4000/upload/upload", {
+      const response = await fetch(API_CONFIG.PRODUCTOS.CREATE, {
         method: "POST",
         body: formData,
       });
@@ -543,6 +529,25 @@ const InventoryManagement = () => {
     const category = categorias.find((cat) => cat.id === categoryId);
     return category ? category.nombre : "Sin categoría";
   };
+
+  // Mostrar pantalla de carga mientras se verifica la autenticación
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-rose-900 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-rose-500 mb-4"></div>
+          <p className="text-white text-xl font-semibold">
+            Verificando autenticación...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // No mostrar nada si no está autenticado (se redirigirá automáticamente)
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-rose-900 to-slate-900">
@@ -835,7 +840,10 @@ const InventoryManagement = () => {
                               </button>
                               {/* Botón Desactivar */}
                               <button
-                                onClick={() => handleDeleteClick(product)}
+                                onClick={() => {
+                                  setSelectedProduct(product);
+                                  setShowDeleteModal(true);
+                                }}
                                 className="bg-orange-500/20 hover:bg-orange-500/30 text-orange-300 p-3 rounded-lg transition-all hover:scale-110 border border-orange-500/30 group"
                                 title="Desactivar"
                               >
@@ -884,17 +892,17 @@ const InventoryManagement = () => {
           <div className="bg-gradient-to-br from-slate-900 to-rose-900 border-2 border-white/20 rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-3xl my-4 sm:my-8">
             {/* Header del modal */}
             <div className="bg-gradient-to-r from-blue-600 to-cyan-600 p-3 sm:p-4 md:p-6 rounded-t-xl sm:rounded-t-2xl border-b border-white/20">
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center justify-center relative">
                 <h2 className="text-lg sm:text-xl md:text-2xl font-extrabold text-white flex items-center gap-2 sm:gap-3">
                   <FaEdit className="text-xl sm:text-2xl md:text-3xl" />
-                  <span className="truncate">Editar Producto</span>
+                  <span>Editar Producto</span>
                 </h2>
                 <button
                   onClick={() => {
                     setShowEditModal(false);
                     setNewImages([]);
                   }}
-                  className="text-white hover:bg-white/20 p-1.5 sm:p-2 rounded-lg transition-all flex-shrink-0"
+                  className="absolute right-0 text-white hover:bg-white/20 p-1.5 sm:p-2 rounded-lg transition-all"
                 >
                   <FaTimes className="text-xl sm:text-2xl" />
                 </button>
@@ -1105,72 +1113,73 @@ const InventoryManagement = () => {
 
       {/* Modal de Confirmación de Eliminación */}
       {showDeleteModal && selectedProduct && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-gradient-to-br from-slate-900 to-rose-900 border-2 border-red-500/50 rounded-2xl shadow-2xl w-full max-w-md">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-gradient-to-br from-slate-900 to-rose-900 border-2 border-red-500/50 rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             {/* Header del modal */}
-            <div className="bg-gradient-to-r from-orange-600 to-amber-600 p-6 rounded-t-2xl border-b border-white/20">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-extrabold text-white flex items-center gap-3">
-                  <FaBan className="text-3xl" />
-                  Desactivar Producto
+            <div className="bg-gradient-to-r from-orange-600 to-amber-600 p-3 sm:p-4 md:p-5 rounded-t-xl sm:rounded-t-2xl border-b border-white/20 sticky top-0 z-10">
+              <div className="flex items-center justify-center relative">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-extrabold text-white flex items-center gap-2 sm:gap-3">
+                  <FaBan className="text-xl sm:text-2xl md:text-3xl" />
+                  <span>Desactivar Producto</span>
                 </h2>
                 <button
                   onClick={() => setShowDeleteModal(false)}
-                  className="text-white hover:bg-white/20 p-2 rounded-lg transition-all"
+                  className="absolute right-0 text-white hover:bg-white/20 p-1.5 sm:p-2 rounded-lg transition-all"
                 >
-                  <FaTimes className="text-2xl" />
+                  <FaTimes className="text-xl sm:text-2xl" />
                 </button>
               </div>
             </div>
 
             {/* Contenido del modal */}
-            <div className="p-6">
-              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-6">
-                <p className="text-white text-center font-semibold mb-4">
-                  ¿Estás seguro de que deseas eliminar este producto?
+            <div className="p-3 sm:p-4 md:p-6">
+              <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg sm:rounded-xl p-3 sm:p-4 mb-3 sm:mb-4">
+                <p className="text-white text-center font-semibold mb-3 sm:mb-4 text-sm sm:text-base">
+                  ¿Desactivar este producto?
                 </p>
-                <div className="flex items-center gap-4 justify-center">
-                  <div className="w-24 h-24 rounded-lg overflow-hidden bg-white/10 border-2 border-white/20 p-2 flex items-center justify-center flex-shrink-0">
+                <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 justify-center">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden bg-white/10 border-2 border-white/20 p-1.5 sm:p-2 flex items-center justify-center flex-shrink-0">
                     <ProductImage
                       productId={selectedProduct.id}
                       alt={selectedProduct.nombre}
                       className="w-full h-full object-contain"
                     />
                   </div>
-                  <div>
-                    <p className="text-rose-200 font-bold text-lg">
+                  <div className="text-center sm:text-left">
+                    <p className="text-rose-200 font-bold text-base sm:text-lg line-clamp-2">
                       {selectedProduct.nombre}
                     </p>
-                    <p className="text-rose-300/70 text-sm">
+                    <p className="text-rose-300/70 text-xs sm:text-sm mt-1">
                       ${parseFloat(selectedProduct.precio || 0).toFixed(2)}
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 mb-6">
-                <p className="text-yellow-300 text-sm text-center">
-                  ⚠️ El producto será desactivado (puede reactivarse después)
+              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg sm:rounded-xl p-2.5 sm:p-3 md:p-4 mb-3 sm:mb-4">
+                <p className="text-yellow-300 text-xs sm:text-sm text-center">
+                  ⚠️ El producto quedará oculto del catálogo pero podrás
+                  reactivarlo después
                 </p>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex gap-2 sm:gap-3">
                 <button
                   onClick={() => setShowDeleteModal(false)}
-                  className="flex-1 bg-white/10 hover:bg-white/20 text-white py-3 px-4 rounded-xl font-bold transition-all border border-white/30"
+                  className="flex-1 bg-white/10 hover:bg-white/20 text-white py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl font-bold transition-all border border-white/30 text-sm sm:text-base"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleDeleteProduct}
                   disabled={loading}
-                  className={`flex-1 py-3 px-4 rounded-xl text-white font-bold transition-all ${
+                  className={`flex-1 py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl text-white font-bold transition-all text-sm sm:text-base ${
                     loading
                       ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 hover:scale-[1.02] hover:shadow-xl"
+                      : "bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 hover:scale-[1.02] hover:shadow-xl"
                   }`}
                 >
-                  {loading ? "Desactivando..." : "Desactivar Producto"}
+                  {loading ? "Desactivando..." : "Sí, Desactivar"}
                 </button>
               </div>
             </div>
@@ -1180,81 +1189,157 @@ const InventoryManagement = () => {
 
       {/* Modal de Confirmación de Eliminación Permanente */}
       {showPermanentDeleteModal && selectedProduct && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-gradient-to-br from-slate-900 to-red-900 border-2 border-red-600/70 rounded-2xl shadow-2xl w-full max-w-md">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-gradient-to-br from-slate-900 to-red-900 border-2 border-red-600/70 rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             {/* Header del modal */}
-            <div className="bg-gradient-to-r from-red-700 to-red-900 p-6 rounded-t-2xl border-b border-white/20">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-extrabold text-white flex items-center gap-3">
-                  <span className="text-3xl">💥</span>
-                  Eliminación Permanente
+            <div className="bg-gradient-to-r from-red-700 to-red-900 p-3 sm:p-4 md:p-5 rounded-t-xl sm:rounded-t-2xl border-b border-white/20 sticky top-0 z-10">
+              <div className="flex items-center justify-center relative">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-extrabold text-white flex items-center gap-2 sm:gap-3">
+                  <span className="text-2xl sm:text-3xl">💥</span>
+                  <span>Eliminar Permanentemente</span>
                 </h2>
                 <button
                   onClick={() => setShowPermanentDeleteModal(false)}
-                  className="text-white hover:bg-white/20 p-2 rounded-lg transition-all"
+                  className="absolute right-0 text-white hover:bg-white/20 p-1.5 sm:p-2 rounded-lg transition-all"
                 >
-                  <FaTimes className="text-2xl" />
+                  <FaTimes className="text-xl sm:text-2xl" />
                 </button>
               </div>
             </div>
 
             {/* Contenido del modal */}
-            <div className="p-6">
-              <div className="bg-red-600/20 border-2 border-red-500/50 rounded-xl p-4 mb-6">
-                <p className="text-white text-center font-bold mb-4 text-lg">
+            <div className="p-3 sm:p-4 md:p-6">
+              <div className="bg-red-600/20 border-2 border-red-500/50 rounded-lg sm:rounded-xl p-3 sm:p-4 mb-3 sm:mb-4">
+                <p className="text-white text-center font-bold mb-2 sm:mb-3 text-sm sm:text-base md:text-lg">
                   ⚠️ ADVERTENCIA: ACCIÓN IRREVERSIBLE
                 </p>
-                <p className="text-red-200 text-center text-sm mb-4">
-                  Esta acción eliminará permanentemente el producto y todas sus
-                  imágenes. No podrá ser recuperado.
+                <p className="text-red-200 text-center text-xs sm:text-sm mb-3 sm:mb-4">
+                  Se eliminará permanentemente el producto y todas sus imágenes.
+                  No podrá recuperarse.
                 </p>
-                <div className="flex items-center gap-4 justify-center">
-                  <div className="w-24 h-24 rounded-lg overflow-hidden bg-white/10 border-2 border-white/20 p-2 flex items-center justify-center flex-shrink-0">
+                <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 justify-center">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden bg-white/10 border-2 border-white/20 p-1.5 sm:p-2 flex items-center justify-center flex-shrink-0">
                     <ProductImage
                       productId={selectedProduct.id}
                       alt={selectedProduct.nombre}
                       className="w-full h-full object-contain"
                     />
                   </div>
-                  <div>
-                    <p className="text-white font-bold text-lg">
+                  <div className="text-center sm:text-left">
+                    <p className="text-white font-bold text-base sm:text-lg line-clamp-2">
                       {selectedProduct.nombre}
                     </p>
-                    <p className="text-rose-300/70 text-sm">
+                    <p className="text-rose-300/70 text-xs sm:text-sm mt-1">
                       ${parseFloat(selectedProduct.precio || 0).toFixed(2)}
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-yellow-500/20 border-2 border-yellow-500/50 rounded-xl p-4 mb-6">
-                <p className="text-yellow-200 text-sm text-center font-semibold">
-                  ⚠️ Se eliminarán:
+              <div className="bg-yellow-500/20 border-2 border-yellow-500/50 rounded-lg sm:rounded-xl p-2.5 sm:p-3 md:p-4 mb-3 sm:mb-4">
+                <p className="text-yellow-200 text-xs sm:text-sm text-center font-semibold leading-relaxed">
+                  ⚠️ Se eliminará:
                   <br />
-                  • El producto de la base de datos
+                  • Registro de la base de datos
                   <br />
-                  • Todas las imágenes de Cloudinary
-                  <br />• No podrá reactivarse después
+                  • Todas las imágenes
+                  <br />• No se puede deshacer
                 </p>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex gap-2 sm:gap-3">
                 <button
                   onClick={() => setShowPermanentDeleteModal(false)}
-                  className="flex-1 bg-white/10 hover:bg-white/20 text-white py-3 px-4 rounded-xl font-bold transition-all border border-white/30"
+                  className="flex-1 bg-white/10 hover:bg-white/20 text-white py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl font-bold transition-all border border-white/30 text-sm sm:text-base"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handlePermanentDeleteProduct}
                   disabled={loading}
-                  className={`flex-1 py-3 px-4 rounded-xl text-white font-bold transition-all ${
+                  className={`flex-1 py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl text-white font-bold transition-all text-xs sm:text-sm md:text-base ${
                     loading
                       ? "bg-gray-400 cursor-not-allowed"
                       : "bg-gradient-to-r from-red-700 to-red-900 hover:from-red-800 hover:to-red-950 hover:scale-[1.02] hover:shadow-xl border-2 border-red-600"
                   }`}
                 >
-                  {loading ? "Eliminando..." : "⚠️ Eliminar Permanentemente"}
+                  {loading ? "Eliminando..." : "Sí, Eliminar"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Confirmación de Reactivación */}
+      {showReactivateModal && selectedProduct && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-gradient-to-br from-slate-900 to-green-900 border-2 border-green-500/50 rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            {/* Header del modal */}
+            <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-3 sm:p-4 md:p-5 rounded-t-xl sm:rounded-t-2xl border-b border-white/20 sticky top-0 z-10">
+              <div className="flex items-center justify-center relative">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-extrabold text-white flex items-center gap-2 sm:gap-3">
+                  <span className="text-2xl sm:text-3xl">♻️</span>
+                  <span>Reactivar Producto</span>
+                </h2>
+                <button
+                  onClick={() => setShowReactivateModal(false)}
+                  className="absolute right-0 text-white hover:bg-white/20 p-1.5 sm:p-2 rounded-lg transition-all"
+                >
+                  <FaTimes className="text-xl sm:text-2xl" />
+                </button>
+              </div>
+            </div>
+
+            {/* Contenido del modal */}
+            <div className="p-3 sm:p-4 md:p-6">
+              <div className="bg-green-500/10 border border-green-500/30 rounded-lg sm:rounded-xl p-3 sm:p-4 mb-3 sm:mb-4">
+                <p className="text-white text-center font-semibold mb-3 sm:mb-4 text-sm sm:text-base">
+                  ¿Reactivar este producto?
+                </p>
+                <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 justify-center">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden bg-white/10 border-2 border-white/20 p-1.5 sm:p-2 flex items-center justify-center flex-shrink-0">
+                    <ProductImage
+                      productId={selectedProduct.id}
+                      alt={selectedProduct.nombre}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div className="text-center sm:text-left">
+                    <p className="text-green-100 font-bold text-base sm:text-lg line-clamp-2">
+                      {selectedProduct.nombre}
+                    </p>
+                    <p className="text-green-300/70 text-xs sm:text-sm mt-1">
+                      ${parseFloat(selectedProduct.precio || 0).toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg sm:rounded-xl p-2.5 sm:p-3 md:p-4 mb-3 sm:mb-4">
+                <p className="text-blue-300 text-xs sm:text-sm text-center">
+                  ✅ El producto volverá a estar activo y visible en el catálogo
+                  público
+                </p>
+              </div>
+
+              <div className="flex gap-2 sm:gap-3">
+                <button
+                  onClick={() => setShowReactivateModal(false)}
+                  className="flex-1 bg-white/10 hover:bg-white/20 text-white py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl font-bold transition-all border border-white/30 text-sm sm:text-base"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={confirmReactivateProduct}
+                  disabled={loading}
+                  className={`flex-1 py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl text-white font-bold transition-all text-sm sm:text-base ${
+                    loading
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 hover:scale-[1.02] hover:shadow-xl"
+                  }`}
+                >
+                  {loading ? "Reactivando..." : "Sí, Reactivar"}
                 </button>
               </div>
             </div>
@@ -1268,10 +1353,10 @@ const InventoryManagement = () => {
           <div className="bg-gradient-to-br from-slate-900 to-rose-900 border-2 border-white/20 rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-3xl my-4 sm:my-8">
             {/* Header del modal */}
             <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-3 sm:p-4 md:p-6 rounded-t-xl sm:rounded-t-2xl border-b border-white/20">
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center justify-center relative">
                 <h2 className="text-lg sm:text-xl md:text-2xl font-extrabold text-white flex items-center gap-2 sm:gap-3">
                   <FaPlus className="text-xl sm:text-2xl md:text-3xl" />
-                  <span className="truncate">Crear Nuevo Producto</span>
+                  <span>Crear Nuevo Producto</span>
                 </h2>
                 <button
                   onClick={() => {
@@ -1286,7 +1371,7 @@ const InventoryManagement = () => {
                       marca_id: "1",
                     });
                   }}
-                  className="text-white hover:bg-white/20 p-1.5 sm:p-2 rounded-lg transition-all flex-shrink-0"
+                  className="absolute right-0 text-white hover:bg-white/20 p-1.5 sm:p-2 rounded-lg transition-all"
                 >
                   <FaTimes className="text-xl sm:text-2xl" />
                 </button>

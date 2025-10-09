@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import API_CONFIG from "../../config/api";
 
 /**
  * Componente para cargar y mostrar imágenes de productos desde el backend
@@ -25,9 +26,7 @@ const ProductImage = ({ productId, alt, className }) => {
       }
 
       try {
-        const response = await fetch(
-          `http://localhost:4000/upload/productos/${productId}/imagenes`
-        );
+        const response = await fetch(API_CONFIG.PRODUCTOS.IMAGES(productId));
         const result = await response.json();
 
         if (result.success && result.data) {

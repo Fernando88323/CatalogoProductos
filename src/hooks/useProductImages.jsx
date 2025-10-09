@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import API_CONFIG from "../config/api";
 
 export const useProductImages = (productId) => {
   const [images, setImages] = useState([]);
@@ -16,9 +17,7 @@ export const useProductImages = (productId) => {
       setError(null);
       try {
         // Obtener imágenes del producto usando el endpoint específico
-        const response = await fetch(
-          `http://localhost:4000/upload/productos/${productId}/imagenes`
-        );
+        const response = await fetch(API_CONFIG.PRODUCTOS.IMAGES(productId));
 
         if (response.ok) {
           const result = await response.json();
@@ -47,9 +46,7 @@ export const useProductImages = (productId) => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch(
-          `http://localhost:4000/upload/productos/${productId}/imagenes`
-        );
+        const response = await fetch(API_CONFIG.PRODUCTOS.IMAGES(productId));
 
         if (response.ok) {
           const result = await response.json();

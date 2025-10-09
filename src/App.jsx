@@ -4,7 +4,6 @@ import AdminLogin from "./pages/AdminLogin/AdminLogin";
 import ProductDetail from "./pages/ProductDetail/ProductDetail";
 import AdminDashboard from "./pages/AdminDashboard/AdminDashboard";
 import InventoryManagement from "./pages/InventoryManagement/InventoryManagement";
-import Contacto from "./pages/Contacto/contacto";
 import NotFoundPage from "./pages/NotFound/notFound";
 
 const App = () => {
@@ -16,7 +15,6 @@ const App = () => {
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/inventory" element={<InventoryManagement />} />
-        <Route path="/contacto" element={<Contacto />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Router>

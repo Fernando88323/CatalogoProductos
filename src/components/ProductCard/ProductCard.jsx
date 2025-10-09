@@ -1,14 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { FaWhatsapp, FaStar } from "react-icons/fa";
+import { FaStar } from "react-icons/fa";
 
-const ProductCard = ({
-  product,
-  index,
-  openWhatsApp,
-  getProductImage,
-  getProductRating,
-}) => {
+const ProductCard = ({ product, index, getProductImage, getProductRating }) => {
   const [isVisible, setIsVisible] = useState(false);
   const cardRef = useRef(null);
 

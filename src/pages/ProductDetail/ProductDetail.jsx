@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import NavBar2 from "../../components/NavBar/NavBar";
 import Footer from "../../components/Footer/Footer";
 import { FaWhatsapp, FaStar, FaBox } from "react-icons/fa";
+import API_CONFIG from "../../config/api";
 
 function ProductDetail() {
   const { id } = useParams();
@@ -21,9 +22,7 @@ function ProductDetail() {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(
-          `http://localhost:4000/upload/productos/${id}`
-        );
+        const response = await fetch(API_CONFIG.PRODUCTOS.DETAIL(id));
 
         if (response.ok) {
           const productData = await response.json();
@@ -36,7 +35,7 @@ function ProductDetail() {
 
           // Obtener productos relacionados
           const relatedResponse = await fetch(
-            `http://localhost:4000/upload/productos?limit=4`
+            `${API_CONFIG.PRODUCTOS.LIST}?limit=4`
           );
           if (relatedResponse.ok) {
             const relatedData = await relatedResponse.json();
