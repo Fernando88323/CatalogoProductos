@@ -3,12 +3,17 @@ import { Link } from "react-router-dom";
 import { FaStar } from "react-icons/fa";
 
 const ProductCard = ({ product, index, getProductImage, getProductRating }) => {
-  const [isVisible, setIsVisible] = useState(false);
+  // En móviles, hacer visibles las tarjetas de inmediato
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const [isVisible, setIsVisible] = useState(isMobile); // Visible inmediatamente en móvil
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const cardRef = useRef(null);
 
   useEffect(() => {
+    // Si ya es visible (móvil), no necesitamos el observer
+    if (isVisible) return;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -17,8 +22,8 @@ const ProductCard = ({ product, index, getProductImage, getProductRating }) => {
         }
       },
       {
-        threshold: 0.01, // Reducido para móviles
-        rootMargin: "50px 0px 50px 0px", // Margen más amplio para pre-cargar
+        threshold: 0.01, // Reducido para mejor detección
+        rootMargin: "100px 0px 100px 0px", // Margen muy amplio para pre-cargar
       }
     );
 
@@ -27,7 +32,7 @@ const ProductCard = ({ product, index, getProductImage, getProductRating }) => {
     }
 
     return () => observer.disconnect();
-  }, []);
+  }, [isVisible]);
 
   const handleImageLoad = () => {
     setImageLoaded(true);

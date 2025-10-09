@@ -22,7 +22,16 @@ import {
 const HomePage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
-  const [visibleSections, setVisibleSections] = useState({});
+  
+  // En móviles, hacer todo visible de inmediato
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const [visibleSections, setVisibleSections] = useState(
+    isMobile ? {
+      'hero-section': true,
+      'filters-section': true,
+      'products-section': true,
+    } : {}
+  );
 
   const heroRef = useRef(null);
   const filtersRef = useRef(null);
@@ -34,6 +43,9 @@ const HomePage = () => {
 
   // Intersection Observer para animaciones al hacer scroll
   useEffect(() => {
+    // Si es móvil, ya está todo visible, no necesitamos observer
+    if (isMobile) return;
+
     const observerOptions = {
       threshold: 0.1,
       rootMargin: "0px 0px -100px 0px",
@@ -61,7 +73,7 @@ const HomePage = () => {
     if (productsRef.current) observer.observe(productsRef.current);
 
     return () => observer.disconnect();
-  }, []);
+  }, [isMobile]);
 
   // Catálogo de categorías dinámico desde los productos
   const categories = useMemo(() => {
