@@ -4,7 +4,7 @@ import AdminLogin from "./pages/AdminLogin/AdminLogin";
 import ProductDetail from "./pages/ProductDetail/ProductDetail";
 import AdminDashboard from "./pages/AdminDashboard/AdminDashboard";
 import InventoryManagement from "./pages/InventoryManagement/InventoryManagement";
-import NotFoundPage from "./pages/NotFound/notFound";
+import NotFoundPage from "./pages/NotFound/NotFound";
 
 const App = () => {
   return (
