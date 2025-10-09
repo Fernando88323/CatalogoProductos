@@ -71,10 +71,17 @@ function ProductDetail() {
   };
 
   const getProductImage = (imageIndex) => {
-    return (
-      product?.imagenes?.[imageIndex]?.image_url ||
-      "https://via.placeholder.com/600x600?text=Sin+Imagen"
-    );
+    if (product?.imagenes && Array.isArray(product.imagenes) && product.imagenes[imageIndex]) {
+      const imageUrl = product.imagenes[imageIndex].image_url;
+      if (imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== '') {
+        // Forzar HTTPS si la URL es HTTP (problema común en móviles)
+        const secureUrl = imageUrl.startsWith('http://') 
+          ? imageUrl.replace('http://', 'https://') 
+          : imageUrl;
+        return secureUrl;
+      }
+    }
+    return "https://via.placeholder.com/600x600?text=Sin+Imagen";
   };
 
   if (loading) {

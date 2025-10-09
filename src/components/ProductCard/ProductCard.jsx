@@ -4,6 +4,8 @@ import { FaStar } from "react-icons/fa";
 
 const ProductCard = ({ product, index, getProductImage, getProductRating }) => {
   const [isVisible, setIsVisible] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const cardRef = useRef(null);
 
   useEffect(() => {
@@ -15,8 +17,8 @@ const ProductCard = ({ product, index, getProductImage, getProductRating }) => {
         }
       },
       {
-        threshold: 0.1,
-        rootMargin: "0px 0px -50px 0px",
+        threshold: 0.01, // Reducido para móviles
+        rootMargin: "50px 0px 50px 0px", // Margen más amplio para pre-cargar
       }
     );
 
@@ -26,6 +28,17 @@ const ProductCard = ({ product, index, getProductImage, getProductRating }) => {
 
     return () => observer.disconnect();
   }, []);
+
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+    setImageError(false);
+  };
+
+  const handleImageError = () => {
+    setImageError(true);
+    setImageLoaded(false);
+    console.error(`Error loading image for product: ${product.nombre}`);
+  };
 
   return (
     <div
@@ -38,11 +51,29 @@ const ProductCard = ({ product, index, getProductImage, getProductRating }) => {
       }}
     >
       {/* Imagen del producto */}
-      <div className="relative overflow-hidden bg-gray-50">
+      <div className="relative overflow-hidden bg-gray-50 h-56 sm:h-64 flex items-center justify-center">
+        {!imageLoaded && !imageError && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+          </div>
+        )}
+        
+        {imageError && (
+          <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+            <span className="text-xs">Sin imagen</span>
+          </div>
+        )}
+        
         <img
           src={getProductImage(product)}
           alt={product.nombre}
-          className="w-full h-56 sm:h-64 object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+          className={`w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500 ${
+            imageLoaded ? "opacity-100" : "opacity-0"
+          }`}
+          onLoad={handleImageLoad}
+          onError={handleImageError}
+          loading="eager"
+          decoding="async"
         />
 
         {/* Badge de agotado */}
