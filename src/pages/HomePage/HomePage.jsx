@@ -4,7 +4,7 @@ import { useProducts } from "../../hooks/useProducts";
 import NavBar2 from "../../components/NavBar/NavBar";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import Footer from "../../components/Footer/Footer";
-// import BottomNav from "../../components/BottomNav/BottomNav";
+import BottomNav from "../../components/BottomNav/BottomNav";
 import {
   FaWhatsapp,
   FaShoppingCart,
@@ -359,7 +359,7 @@ const HomePage = () => {
       <Footer />
 
       {/* Bottom Navigation - Solo móviles */}
-      {/* <BottomNav /> */}
+      <BottomNav />
 
       <style>{`
         @keyframes gradient {
