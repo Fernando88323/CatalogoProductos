@@ -4,6 +4,7 @@ import { useProducts } from "../../hooks/useProducts";
 import NavBar2 from "../../components/NavBar/NavBar";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import Footer from "../../components/Footer/Footer";
+// import BottomNav from "../../components/BottomNav/BottomNav";
 import {
   FaWhatsapp,
   FaShoppingCart,
@@ -275,46 +276,59 @@ const HomePage = () => {
       <main
         ref={productsRef}
         id="products-section"
-        className={`max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 md:py-10 transition-all duration-1000 delay-300 ${
+        className={`max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 md:py-10 pb-20 md:pb-10 transition-all duration-1000 delay-300 ${
           visibleSections["products-section"]
             ? "opacity-100 translate-y-0"
             : "opacity-0 translate-y-10"
         }`}
       >
         <div className="mb-6 sm:mb-8">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-800 mb-2">
-            Productos Destacados
-          </h2>
-          <p className="text-sm sm:text-base text-gray-600">
-            {isLoading
-              ? "Cargando productos..."
-              : `${filteredProducts.length} producto${
-                  filteredProducts.length !== 1 ? "s" : ""
-                } encontrado${filteredProducts.length !== 1 ? "s" : ""}`}
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-2">
+                Productos Destacados
+              </h2>
+              <p className="text-sm sm:text-base text-gray-600">
+                {isLoading
+                  ? "Cargando productos..."
+                  : `${filteredProducts.length} producto${
+                      filteredProducts.length !== 1 ? "s" : ""
+                    } encontrado${filteredProducts.length !== 1 ? "s" : ""}`}
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Loading state */}
         {isLoading && (
-          <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-600"></div>
+          <div className="flex flex-col justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-600 mb-4"></div>
+            <p className="text-gray-600 animate-pulse">
+              Cargando productos increíbles...
+            </p>
           </div>
         )}
 
         {/* Error state */}
         {error && (
-          <div className="text-center py-20">
+          <div className="text-center py-20 bg-red-50 rounded-2xl p-8">
             <div className="text-6xl mb-4">⚠️</div>
             <h3 className="text-2xl font-bold text-gray-800 mb-2">
               Error al cargar productos
             </h3>
-            <p className="text-gray-600">{error}</p>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-semibold hover:shadow-lg transition-all"
+            >
+              Reintentar
+            </button>
           </div>
         )}
 
-        {/* Products grid */}
+        {/* Products grid - Optimizado para móviles */}
         {!isLoading && !error && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
             {filteredProducts.map((product, index) => (
               <ProductCard
                 key={product.id}
@@ -343,6 +357,9 @@ const HomePage = () => {
 
       {/* Footer mejorado */}
       <Footer />
+
+      {/* Bottom Navigation - Solo móviles */}
+      {/* <BottomNav /> */}
 
       <style>{`
         @keyframes gradient {
