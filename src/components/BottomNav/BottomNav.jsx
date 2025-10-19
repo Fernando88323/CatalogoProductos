@@ -3,8 +3,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 import {
   FaHome,
   FaSearch,
-  FaHeart,
-  FaUser,
   FaWhatsapp,
   FaBox,
   FaEllipsisH,

@@ -1,24 +1,24 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   FaHome,
   FaWhatsapp,
   // FaHeart,
-  FaSearch,
   FaTimes,
   FaInstagram,
   FaFacebook,
   FaUserShield,
   FaShoppingBag,
-  FaUserCircle,
   FaExternalLinkAlt,
   FaBox,
 } from "react-icons/fa";
+import { MdOutlineSchedule } from "react-icons/md";
 
 const Sidebar = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const whatsappNumber = "50373707035";
+  const whatsappNumber = "73707035";
 
   const handleWhatsApp = () => {
     const message = "Hola! Estoy interesado en sus productos";
@@ -100,7 +100,7 @@ const Sidebar = ({ isOpen, onClose }) => {
           {/* Social Icons */}
           <div className="flex gap-4 mt-4">
             <a
-              href="https://instagram.com"
+              href="https://www.instagram.com/jesygbarrera/?utm_source=qr&igsh=MXZsOGlsbGdudmh2bw%3D%3D#"
               target="_blank"
               rel="noopener noreferrer"
               className="text-white/80 hover:text-white hover:bg-white/10 p-2 rounded-full transition-all"
@@ -118,7 +118,7 @@ const Sidebar = ({ isOpen, onClose }) => {
               <FaWhatsapp className="text-xl" />
             </a>
             <a
-              href="https://facebook.com"
+              href="https://www.facebook.com/jesydaniela?rdid=KQ5R4w7U7GpXEET2&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1CMAX7u5tS%2F#"
               target="_blank"
               rel="noopener noreferrer"
               className="text-white/80 hover:text-white hover:bg-white/10 p-2 rounded-full transition-all"
@@ -178,25 +178,40 @@ const Sidebar = ({ isOpen, onClose }) => {
             Administración
           </h3>
           <div className="space-y-2">
-            <button
-              onClick={() => handleNavigation("/admin/login")}
-              className="w-full flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl hover:shadow-md transition-all text-left group"
-            >
-              <FaUserShield className="text-blue-600 text-lg group-hover:scale-110 transition-transform" />
-              <span className="text-gray-800 text-sm font-semibold">
-                Panel Admin
-              </span>
-            </button>
+            {(() => {
+              const isAdminActive = location.pathname.startsWith("/admin");
+              return (
+                <button
+                  onClick={() => handleNavigation("/admin/login")}
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left group ${
+                    isAdminActive
+                      ? "bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 hover:shadow-md"
+                      : "hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50"
+                  }`}
+                >
+                  <FaUserShield className="text-blue-600 text-lg group-hover:scale-110 transition-transform" />
+                  <span className="text-gray-800 text-sm font-semibold">
+                    Panel Admin
+                  </span>
+                </button>
+              );
+            })()}
           </div>
         </div>
 
         {/* Footer Info */}
         <div className="p-4 border-t mt-auto">
           <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-xl">
-            <p className="text-xs text-gray-600 mb-2 font-semibold">
+            {/* <p className="text-xs text-gray-600 mb-2 font-semibold">
               📞 Contacto
             </p>
-            <p className="text-sm text-gray-700">WhatsApp: {whatsappNumber}</p>
+            <p className="text-sm text-gray-700">WhatsApp: {whatsappNumber}</p> */}
+
+            <p className="text-sm text-gray-700 flex items-center gap-1">
+              <MdOutlineSchedule className="text-lg" />
+              Horarios de Atención
+            </p>
+
             <p className="text-xs text-gray-500 mt-2">
               Lun - Sab: 9:00 AM - 6:00 PM
             </p>

@@ -120,7 +120,6 @@ const Footer = () => {
         {/* Copyright */}
         <div className="border-t border-gray-800 pt-8 text-center text-gray-400 text-sm">
           <p>© 2025 Jesé Shop - Todos los derechos reservados</p>
-          <p className="mt-2">Desarrollado por Fernando Gutiérrez</p>
         </div>
       </div>
     </footer>
