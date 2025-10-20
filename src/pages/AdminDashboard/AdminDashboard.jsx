@@ -197,18 +197,18 @@ function AdminDashboard() {
       <div className="min-h-screen bg-gray-50">
         {/* Header con estadísticas */}
         <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-              <div className="mb-2 sm:mb-0">
-                <h1 className="text-xl font-bold text-gray-900">
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="mb-1 sm:mb-0">
+                <h1 className="text-lg sm:text-xl font-bold text-gray-900">
                   Catálogo de Productos
                 </h1>
-                <p className="text-gray-600 text-sm">
+                <p className="text-gray-600 text-xs sm:text-sm">
                   Explora nuestra colección
                 </p>
               </div>
-              <div className="flex items-center gap-2 mt-2 sm:mt-0">
-                <span className="bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full">
+              <div className="flex items-center gap-2">
+                <span className="bg-blue-100 text-blue-700 text-xs font-semibold px-2.5 py-1 rounded-full">
                   {filteredProducts.length} productos
                 </span>
               </div>
@@ -218,20 +218,20 @@ function AdminDashboard() {
 
         {/* Controles de búsqueda y filtros */}
         <div className="bg-white border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-              <div className="flex flex-col sm:flex-row gap-4 flex-1">
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-3">
+            <div className="flex flex-col gap-2.5 sm:gap-3">
+              <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 items-stretch sm:items-center justify-between">
                 {/* Búsqueda */}
-                <div className="relative flex-1 max-w-md">
+                <div className="relative flex-1 max-w-full sm:max-w-md">
                   <input
                     type="text"
                     placeholder="Buscar productos..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-8 sm:pl-9 pr-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                   />
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <span className="text-gray-400">🔍</span>
+                  <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                    <span className="text-gray-400 text-sm">🔍</span>
                   </div>
                 </div>
 
@@ -239,7 +239,7 @@ function AdminDashboard() {
                 <select
                   value={filterCategory}
                   onChange={(e) => setFilterCategory(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm flex-shrink-0"
                 >
                   <option value="">Todas las categorías</option>
                   {categorias.map((cat) => (
@@ -248,81 +248,89 @@ function AdminDashboard() {
                     </option>
                   ))}
                 </select>
+
+                {/* Controles de vista */}
+                <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+                  <button
+                    onClick={() => setViewMode("grid")}
+                    className={`px-2.5 py-1 rounded-md text-xs sm:text-sm font-medium transition-colors ${
+                      viewMode === "grid"
+                        ? "bg-white text-gray-900 shadow-sm"
+                        : "text-gray-600 hover:text-gray-900"
+                    }`}
+                  >
+                    🔲 Grid
+                  </button>
+                  <button
+                    onClick={() => setViewMode("table")}
+                    className={`px-2.5 py-1 rounded-md text-xs sm:text-sm font-medium transition-colors ${
+                      viewMode === "table"
+                        ? "bg-white text-gray-900 shadow-sm"
+                        : "text-gray-600 hover:text-gray-900"
+                    }`}
+                  >
+                    📋 Tabla
+                  </button>
+                </div>
               </div>
-              {/* Controles de vista */}
-              <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
-                <button
-                  onClick={() => setViewMode("grid")}
-                  className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                    viewMode === "grid"
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-600 hover:text-gray-900"
-                  }`}
-                >
-                  🔲 Grid
-                </button>
-                <button
-                  onClick={() => setViewMode("table")}
-                  className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                    viewMode === "table"
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-600 hover:text-gray-900"
-                  }`}
-                >
-                  📋 Tabla
-                </button>
-              </div>
+              {/* Indicador de resultados */}
+              {(searchTerm || filterCategory) && (
+                <div className="text-xs sm:text-sm text-gray-600">
+                  Mostrando {filteredProducts.length} productos
+                  {searchTerm && <span> · Búsqueda: "{searchTerm}"</span>}
+                  {filterCategory && (
+                    <span>
+                      · Categoría:{" "}
+                      {
+                        categorias.find(
+                          (c) => c.id === parseInt(filterCategory)
+                        )?.nombre
+                      }
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
-            {/* Indicador de resultados */}
-            {(searchTerm || filterCategory) && (
-              <div className="mt-3 text-sm text-gray-600">
-                Mostrando {filteredProducts.length} productos
-                {searchTerm && <span> · Búsqueda: "{searchTerm}"</span>}
-                {filterCategory && (
-                  <span>
-                    · Categoría:{" "}
-                    {
-                      categorias.find((c) => c.id === parseInt(filterCategory))
-                        ?.nombre
-                    }
-                  </span>
-                )}
-              </div>
-            )}
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
           {/* Lista pública de productos (sin formulario admin) */}
           {error ? (
-            <div className="text-center py-12">
-              <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
-                <div className="text-red-600 text-4xl mb-4">⚠️</div>
-                <h3 className="text-lg font-semibold text-red-800 mb-2">
+            <div className="text-center py-8 sm:py-12">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 sm:p-6 max-w-md mx-auto">
+                <div className="text-red-600 text-3xl sm:text-4xl mb-3 sm:mb-4">
+                  ⚠️
+                </div>
+                <h3 className="text-base sm:text-lg font-semibold text-red-800 mb-2">
                   Error de conexión
                 </h3>
-                <p className="text-red-600 mb-4">
+                <p className="text-sm sm:text-base text-red-600 mb-3 sm:mb-4">
                   No se pudo conectar al servidor backend.
                 </p>
-                <p className="text-sm text-red-500 mb-4">{error}</p>
+                <p className="text-xs sm:text-sm text-red-500 mb-3 sm:mb-4">
+                  {error}
+                </p>
                 <button
                   onClick={refetch}
-                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm"
                 >
                   🔄 Reintentar
                 </button>
               </div>
             </div>
           ) : filteredProducts.length === 0 && !isLoading ? (
-            <div className="text-center py-12">
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 max-w-md mx-auto">
-                <div className="text-gray-400 text-4xl mb-4">📦</div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">
+            <div className="text-center py-8 sm:py-12">
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 sm:p-6 max-w-md mx-auto">
+                <div className="text-gray-400 text-3xl sm:text-4xl mb-3 sm:mb-4">
+                  📦
+                </div>
+                <h3 className="text-base sm:text-lg font-semibold text-gray-700 mb-2">
                   {searchTerm || filterCategory
                     ? "No se encontraron productos"
                     : "No hay productos"}
                 </h3>
-                <p className="text-gray-500 mb-4">
+                <p className="text-sm sm:text-base text-gray-500 mb-3 sm:mb-4">
                   {searchTerm || filterCategory
                     ? "Intenta cambiar los filtros de búsqueda."
                     : "Aún no hay productos en el catálogo."}
@@ -333,7 +341,7 @@ function AdminDashboard() {
             <>
               {/* Vista Grid */}
               {viewMode === "grid" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
                   {filteredProducts.map((product) => (
                     <ProductCard key={product.id} product={product} />
                   ))}
@@ -343,59 +351,61 @@ function AdminDashboard() {
               {/* Vista Tabla */}
               {viewMode === "table" && (
                 <div className="bg-white rounded-lg shadow overflow-hidden">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Producto
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Categoría
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Precio
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {filteredProducts.map((product) => (
-                        <tr key={product.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <div className="flex-shrink-0 h-10 w-10">
-                                <img
-                                  className="h-10 w-10 rounded-full object-cover"
-                                  src={
-                                    product.imagenes?.[0]?.image_url ||
-                                    "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yMCAyOEMyNCAyOCAyOCAyNCAyOCAyMEMyOCAxNiAyNCAxMiAyMCAxMkMxNiAxMiAxMiAxNiAxMiAyMEMxMiAyNCAxNiAyOCAyMCAyOFoiIGZpbGw9IiM5Q0EzQUYiLz4KPC9zdmc+Cg=="
-                                  }
-                                  alt={product.nombre}
-                                />
-                              </div>
-                              <div className="ml-4">
-                                <div className="text-sm font-medium text-gray-900">
-                                  {product.nombre}
-                                </div>
-                                <div className="text-sm text-gray-500 truncate max-w-xs">
-                                  {product.descripcion}
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                              {categorias.find(
-                                (c) => c.id === product.categoria_id
-                              )?.nombre || "Sin categoría"}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            ${parseFloat(product.precio || 0).toFixed(2)}
-                          </td>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Producto
+                          </th>
+                          <th className="px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Categoría
+                          </th>
+                          <th className="px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Precio
+                          </th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {filteredProducts.map((product) => (
+                          <tr key={product.id} className="hover:bg-gray-50">
+                            <td className="px-3 sm:px-4 lg:px-6 py-2 sm:py-3">
+                              <div className="flex items-center">
+                                <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10">
+                                  <img
+                                    className="h-8 w-8 sm:h-10 sm:w-10 rounded-full object-cover"
+                                    src={
+                                      product.imagenes?.[0]?.image_url ||
+                                      "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yMCAyOEMyNCAyOCAyOCAyNCAyOCAyMEMyOCAxNiAyNCAxMiAyMCAxMkMxNiAxMiAxMiAxNiAxMiAyMEMxMiAyNCAxNiAyOCAyMCAyOFoiIGZpbGw9IiM5Q0EzQUYiLz4KPC9zdmc+Cg=="
+                                    }
+                                    alt={product.nombre}
+                                  />
+                                </div>
+                                <div className="ml-2 sm:ml-3 lg:ml-4 min-w-0 flex-1">
+                                  <div className="text-xs sm:text-sm font-medium text-gray-900 truncate">
+                                    {product.nombre}
+                                  </div>
+                                  <div className="text-[10px] sm:text-xs text-gray-500 truncate max-w-[150px] sm:max-w-xs">
+                                    {product.descripcion}
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-3 sm:px-4 lg:px-6 py-2 sm:py-3 whitespace-nowrap">
+                              <span className="inline-flex px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                {categorias.find(
+                                  (c) => c.id === product.categoria_id
+                                )?.nombre || "Sin categoría"}
+                              </span>
+                            </td>
+                            <td className="px-3 sm:px-4 lg:px-6 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-gray-900 font-medium">
+                              ${parseFloat(product.precio || 0).toFixed(2)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               )}
             </>

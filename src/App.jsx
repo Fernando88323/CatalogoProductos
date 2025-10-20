@@ -5,12 +5,14 @@ import ProductDetail from "./pages/ProductDetail/ProductDetail";
 import AdminDashboard from "./pages/AdminDashboard/AdminDashboard";
 import InventoryManagement from "./pages/InventoryManagement/InventoryManagement";
 import NotFoundPage from "./pages/NotFound/NotFound";
+import HomePageLanding from "./pages/HomePageLanding/HomePageLanding";
 
 const App = () => {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/landing" element={<HomePageLanding />} />
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />

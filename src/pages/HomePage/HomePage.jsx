@@ -205,7 +205,7 @@ const HomePage = () => {
       </section>
 
       {/* Sección Belcorp - Full Width con diseño profesional y sutil */}
-      <section className="relative w-full bg-gradient-to-br from-slate-50 via-purple-50 to-pink-50 py-12 sm:py-16 md:py-20 overflow-hidden border-y border-purple-100">
+      <section className="relative w-full bg-gradient-to-br from-slate-100 via-purple-100 to-pink-100 py-12 sm:py-16 md:py-20 overflow-hidden border-y border-purple-100">
         {/* Decoración de fondo */}
         <div className="absolute inset-0 opacity-30">
           <div className="absolute top-10 left-10 w-40 h-40 bg-purple-200 rounded-full blur-3xl"></div>
@@ -227,7 +227,7 @@ const HomePage = () => {
               </div>
               <p className="text-sm sm:text-base md:text-lg text-gray-700 font-normal">
                 Descubre nuestra línea completa de productos de belleza y
-                cuidado personal
+                cuidado personal.
               </p>
             </div>
 
