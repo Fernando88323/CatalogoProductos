@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   FaHome,
@@ -17,6 +17,20 @@ import { MdOutlineSchedule } from "react-icons/md";
 const Sidebar = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Bloquear scroll del body cuando el sidebar está abierto
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    // Cleanup al desmontar el componente
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
 
   const whatsappNumber = "73707035";
 
@@ -213,8 +227,9 @@ const Sidebar = ({ isOpen, onClose }) => {
             </p>
 
             <p className="text-xs text-gray-500 mt-2">
-              Lun - Sab: 9:00 AM - 6:00 PM
+              Lunes - Sábado: 9:00 AM - 6:00 PM
             </p>
+            <p className="text-xs text-gray-500 mt-2">Domingo: Cerrado</p>
           </div>
         </div>
       </aside>
