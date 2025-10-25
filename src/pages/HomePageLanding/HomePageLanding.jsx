@@ -252,7 +252,7 @@ const HomePageLanding = () => {
               </div>
 
               {/* CTA Button - Mobile */}
-              <div className="sm:hidden flex justify-center mt-6">
+              {/* <div className="sm:hidden flex justify-center mt-6">
                 <a
                   href="https://catalogodigital.somosbelcorp.com/SV?consultant=MDUxNjEyNg=="
                   target="_blank"
@@ -274,7 +274,7 @@ const HomePageLanding = () => {
                     />
                   </svg>
                 </a>
-              </div>
+              </div> */}
             </div>
           </div>
         </section>

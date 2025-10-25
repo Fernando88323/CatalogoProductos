@@ -52,6 +52,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     {
       icon: FaHome,
       label: "Inicio",
+      path: "/",
       action: () => handleNavigation("/"),
       color: "text-purple-600",
     },
@@ -64,12 +65,14 @@ const Sidebar = ({ isOpen, onClose }) => {
     {
       icon: FaBox,
       label: "Productos",
+      path: "/products",
       action: () => handleNavigation("/products"),
       color: "text-blue-600",
     },
     /*     {
       icon: FaHeart,
       label: "Favoritos",
+      path: "/favoritos",
       action: () => handleNavigation("/favoritos"),
       color: "text-red-600",
     }, */
@@ -149,20 +152,39 @@ const Sidebar = ({ isOpen, onClose }) => {
             Navegación
           </h3>
           <nav className="space-y-1">
-            {menuItems.map((item, index) => (
-              <button
-                key={index}
-                onClick={item.action}
-                className="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 transition-all duration-200 text-left group"
-              >
-                <item.icon
-                  className={`text-xl ${item.color} group-hover:scale-110 transition-transform`}
-                />
-                <span className="text-gray-800 font-medium group-hover:text-gray-900">
-                  {item.label}
-                </span>
-              </button>
-            ))}
+            {menuItems.map((item, index) => {
+              const isActive = location.pathname === item.path;
+
+              // Obtener el color base del item (purple, blue, red, etc.)
+              const colorBase = item.color
+                .replace("text-", "")
+                .replace("-600", "");
+
+              return (
+                <button
+                  key={index}
+                  onClick={item.action}
+                  className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 text-left group ${
+                    isActive
+                      ? `bg-gradient-to-r from-${colorBase}-50 to-${colorBase}-50 border border-${colorBase}-200 hover:shadow-md`
+                      : "hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50"
+                  }`}
+                >
+                  <item.icon
+                    className={`text-xl ${item.color} group-hover:scale-110 transition-transform`}
+                  />
+                  <span
+                    className={`font-medium ${
+                      isActive
+                        ? "text-gray-800 font-semibold"
+                        : "text-gray-800 group-hover:text-gray-900"
+                    }`}
+                  >
+                    {item.label}
+                  </span>
+                </button>
+              );
+            })}
           </nav>
         </div>
 
