@@ -5,7 +5,8 @@ import {
   FaShoppingCart,
   FaUserShield,
   FaHome,
-  FaExternalLinkAlt,
+  // FaExternalLinkAlt,
+  FaBoxOpen,
   FaBars,
 } from "react-icons/fa";
 import Sidebar from "../Sidebar/Sidebar";
@@ -34,6 +35,10 @@ const NavBar = ({
 
   const handleHomeClick = () => {
     navigate("/");
+  };
+
+  const handleProductsClick = () => {
+    navigate("/products");
   };
 
   const handleAdminClick = () => {
@@ -69,7 +74,7 @@ const NavBar = ({
             {/* Right side - Actions - Solo visible en desktop */}
             <div className="hidden md:flex items-center gap-2 sm:gap-3">
               {/* Catálogo Externo */}
-              <a
+              {/*    <a
                 href="https://catalogodigital.somosbelcorp.com/SV?consultant=MDUxNjEyNg=="
                 target="_blank"
                 rel="noopener noreferrer"
@@ -78,7 +83,7 @@ const NavBar = ({
               >
                 <FaExternalLinkAlt className="text-base sm:text-lg" />
                 <span className="hidden xl:inline">Catálogo</span>
-              </a>
+              </a> */}
 
               {/* Inicio */}
               <button
@@ -89,7 +94,15 @@ const NavBar = ({
                 <FaHome className="text-base sm:text-lg" />
                 <span className="hidden sm:inline">Inicio</span>
               </button>
-
+              {/* Products */}
+              <button
+                onClick={handleProductsClick}
+                className="flex items-center justify-center gap-1.5 sm:gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 sm:px-4 h-9 sm:h-10 rounded-full hover:shadow-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-300 font-semibold text-sm flex-shrink-0"
+                title="Ver Productos"
+              >
+                <FaBoxOpen className="text-base sm:text-lg" />
+                <span className="hidden sm:inline">Productos</span>
+              </button>
               {/* Admin */}
               {showAdminButton && (
                 <button

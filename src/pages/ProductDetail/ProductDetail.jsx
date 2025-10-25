@@ -427,10 +427,9 @@ function ProductDetail() {
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
               {relatedProducts.map((rel) => (
-                <Link
+                <div
                   key={rel.id}
-                  to={`/product/${rel.id}`}
-                  className="group bg-white rounded-xl sm:rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                  className="group bg-white rounded-xl sm:rounded-2xl overflow-hidden shadow-md transition-all duration-300"
                 >
                   <div className="relative overflow-hidden bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
                     <img
@@ -454,8 +453,22 @@ function ProductDetail() {
                     <div className="text-lg sm:text-xl md:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
                       ${parseFloat(rel.precio || 0).toFixed(2)}
                     </div>
+
+                    {/* Botón Ver Detalle — solo este es clickeable */}
+                    <div className="mt-3">
+                      <Link
+                        to={`/product/${rel.id}`}
+                        className="w-full inline-flex bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl font-bold hover:shadow-lg hover:scale-[1.02] active:scale-95 transition-all duration-300 items-center justify-center gap-2 text-xs sm:text-sm"
+                        aria-label={`Ver detalle de ${rel.nombre}`}
+                      >
+                        <span>Ver Detalle</span>
+                        <span className="group-hover:translate-x-1 transition-transform">
+                          →
+                        </span>
+                      </Link>
+                    </div>
                   </div>
-                </Link>
+                </div>
               ))}
             </div>
           </div>

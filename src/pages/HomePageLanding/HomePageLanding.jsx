@@ -51,7 +51,7 @@ const HomePageLanding = () => {
     return () => observer.disconnect();
   }, [isMobile]);
 
-  const whatsappNumber = "50373707035";
+  const whatsappNumber = "50360120492";
 
   const openWhatsApp = () => {
     const message =
@@ -78,7 +78,7 @@ const HomePageLanding = () => {
         <section
           ref={heroRef}
           id="hero-section"
-          className={`snap-start relative text-white overflow-hidden transition-all duration-1000 h-screen flex items-center ${
+          className={`snap-start relative text-white overflow-hidden transition-all duration-1000 min-h-screen flex items-center pt-16 sm:pt-20 ${
             visibleSections["hero-section"]
               ? "opacity-100 translate-y-0"
               : "opacity-0 translate-y-10"
@@ -91,7 +91,7 @@ const HomePageLanding = () => {
             <div className="absolute bottom-10 right-10 w-60 h-60 bg-white rounded-full blur-3xl animate-pulse"></div>
           </div>
 
-          <div className="relative z-10 w-full py-12 sm:py-16 md:py-20 lg:py-24 px-4 sm:px-6">
+          <div className="relative z-10 w-full py-8 sm:py-12 px-4 sm:px-6">
             <div className="max-w-7xl mx-auto text-center">
               <div className="inline-block mb-3 sm:mb-4 px-3 sm:px-4 py-1.5 sm:py-2 bg-white/20 backdrop-blur-sm rounded-full text-xs sm:text-sm font-semibold border border-white/30 animate-bounce">
                 ✨ Nuevos Productos Disponibles
@@ -129,7 +129,7 @@ const HomePageLanding = () => {
         <section
           ref={belcorpRef}
           id="belcorp-section"
-          className={`snap-start relative w-full bg-gradient-to-br from-slate-100 via-purple-100 to-pink-100 overflow-hidden border-y border-purple-100 transition-all duration-1000 delay-200 h-screen flex items-center ${
+          className={`snap-start relative w-full bg-gradient-to-br from-slate-100 via-purple-100 to-pink-100 overflow-hidden border-y border-purple-100 transition-all duration-1000 delay-200 min-h-screen flex items-center pt-16 sm:pt-20 ${
             visibleSections["belcorp-section"]
               ? "opacity-100 translate-y-0"
               : "opacity-0 translate-y-10"
@@ -142,10 +142,10 @@ const HomePageLanding = () => {
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-indigo-100 rounded-full blur-3xl"></div>
           </div>
 
-          <div className="relative z-10 w-full py-12 sm:py-16 md:py-20">
+          <div className="relative z-10 w-full py-6 sm:py-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6">
               {/* Header con título y botón */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8 sm:mb-10">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-6 sm:mb-8">
                 <div className="text-center sm:text-left">
                   <div className="flex items-center justify-center sm:justify-start gap-2 mb-2">
                     <h3 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-700 via-purple-600 to-pink-600">
@@ -162,7 +162,7 @@ const HomePageLanding = () => {
                 </div>
 
                 {/* CTA Button - Desktop */}
-                <div className="hidden sm:block flex-shrink-0">
+                {/* <div className="hidden sm:block flex-shrink-0">
                   <a
                     href="https://catalogodigital.somosbelcorp.com/SV?consultant=MDUxNjEyNg=="
                     target="_blank"
@@ -184,11 +184,11 @@ const HomePageLanding = () => {
                       />
                     </svg>
                   </a>
-                </div>
+                </div> */}
               </div>
 
               {/* Marcas - Grid responsive con imágenes */}
-              <div className="grid grid-cols-3 gap-4 sm:gap-6 md:gap-8 mb-6 sm:mb-8">
+              <div className="grid grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6">
                 {/* L'Bel */}
                 <div className="group cursor-pointer">
                   <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-white shadow-md hover:shadow-xl transition-all duration-300 aspect-square border border-gray-100">
@@ -280,7 +280,7 @@ const HomePageLanding = () => {
         </section>
 
         {/* Sección de Contacto y CTA - Full Width */}
-        <section className="snap-start relative w-full bg-gradient-to-br from-purple-50 via-pink-50 to-purple-50 overflow-hidden h-screen flex items-center">
+        <section className="snap-start relative w-full bg-gradient-to-br from-purple-50 via-pink-50 to-purple-50 overflow-hidden min-h-screen flex items-center">
           {/* Decoración de fondo */}
           <div className="absolute inset-0 opacity-40">
             <div className="absolute top-10 left-10 w-40 h-40 bg-purple-200 rounded-full blur-3xl"></div>
@@ -288,7 +288,7 @@ const HomePageLanding = () => {
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-indigo-100 rounded-full blur-3xl"></div>
           </div>
 
-          <div className="relative z-10 w-full py-16 sm:py-20">
+          <div className="relative z-10 w-full py-12 sm:py-16">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-700 via-purple-600 to-pink-600 mb-4 sm:mb-6">
                 ¿Listo para descubrir más?
@@ -356,7 +356,7 @@ const HomePageLanding = () => {
         </section>
 
         {/* Sección Footer */}
-        <section className="snap-start h-screen w-full flex items-end">
+        <section className="snap-start min-h-screen w-full flex items-center justify-center bg-gray-900">
           <div className="w-full">
             <Footer />
           </div>
@@ -388,13 +388,20 @@ const HomePageLanding = () => {
         /* Optimización del scroll-snap */
         .snap-y {
           scroll-snap-type: y mandatory;
-          scroll-padding-top: 0px;
+          scroll-padding: 0;
           scrollbar-width: thin;
+          -webkit-overflow-scrolling: touch;
         }
 
         .snap-start {
           scroll-snap-align: start;
-          scroll-snap-stop: always;
+          scroll-snap-stop: normal;
+        }
+        
+        /* Asegurar que las secciones ocupen toda la altura */
+        section.snap-start {
+          min-height: 100vh;
+          min-height: 100dvh; /* Dynamic viewport height para móviles */
         }
 
         /* Custom scrollbar para el contenedor principal */

@@ -55,16 +55,16 @@ const Sidebar = ({ isOpen, onClose }) => {
       action: () => handleNavigation("/"),
       color: "text-purple-600",
     },
-    {
+    /*     {
       icon: FaWhatsapp,
       label: "WhatsApp",
       action: handleWhatsApp,
       color: "text-green-600",
-    },
+    }, */
     {
       icon: FaBox,
       label: "Productos",
-      action: () => handleNavigation("/"),
+      action: () => handleNavigation("/products"),
       color: "text-blue-600",
     },
     /*     {
@@ -107,7 +107,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             </div>
             <div>
               <h2 className="text-xl font-bold">Jesé Shop</h2>
-              <p className="text-sm text-white/80">Tu tienda online</p>
+              <p className="text-sm text-white/80">Catálogo online</p>
             </div>
           </div>
 
